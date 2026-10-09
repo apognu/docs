@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Screening search",
+    "icon": "ph:file-magnifying-glass-duotone",
+    "href": "/screening/manual-search/",
+    "description": "Search entities manually on Sanctions, PEP or Adverse media lists.",
+    "isNew": true
+  },
+  {
+    "title": "Data model edition",
+    "icon": "ph:note-pencil-duotone",
+    "href": "/scenarios/rules/",
+    "description": "Remove tables, fields, links or pivots from your data model.",
+    "isNew": true
+  },
+  {
+    "title": "Ongoing monitoring",
+    "icon": "ph:binoculars-duotone",
+    "href": "/scenarios/formula/",
+    "description": "Get alerted when your customers appear on an updated list.",
+    "isNew": true
+  },
+  {
+    "title": "New functions",
+    "icon": "ph:function-duotone",
+    "href": "/scenarios/formula/",
+    "description": "Compute median, percentile and standard deviation in your rules.",
+    "isNew": true
+  },
+  {
+    "title": "AI Review",
+    "icon": "ph:robot-duotone",
+    "href": "/case-manager/ai-analyst/",
+    "description": "Get insights from our AI agent and improve your team's efficiency.",
+    "isNew": true
+  },
+  {
+    "title": "Analytics",
+    "icon": "ph:chart-line-duotone",
+    "href": "/infrastructure/integrated-analytics/",
+    "description": "Tuning Marble to use the integrated analytics module, with production-grade performance.",
+    "isNew": true
+  }
+]

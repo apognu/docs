@@ -1,0 +1,87 @@
+---
+title: "Lifecycle"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Introduction
+
+We have reviewed how to create and modify a scenario. Now, let's delve into the versioning system and, more specifically, how to use a scenario to make decisions in production.
+
+## Versioning
+
+The versioning system manages changes to scenarios over time, allowing you to create and track multiple versions. You can only work on a draft version of a scenario.
+
+You can choose any version or the current draft of each scenario using the dedicated picker in the scenario detail view
+
+<Screenshot src="scenarios/lifecycle-1.png" caption="Scenario version picker" bordered />
+
+### Draft
+
+A Draft represents an editable state of a scenario. You can make multiple changes over time until you are satisfied with the modifications and the scenario passes all validation requirements.
+
+A draft is automatically created at scenario creation. You can also create a new draft from any existing version.
+
+<Screenshot src="scenarios/lifecycle-2.png" caption="Create a new draft from an existing version" bordered />
+
+:::note[Each scenario can have either zero or one draft at any given time.]
+
+:::
+### Version
+
+A Version represents a non-editable state of a scenario. You can view it as a snapshot of the scenario at a specific point in time.
+
+To create a version, you must :
+
+1. Create or select a draft
+2. Make your changes
+3. Solve any validation issues
+4. **Commit** your version by clicking the top right button
+
+:::note[You can quickly identify validation issues by following the red dot indicators in the interface.]
+
+:::
+<Screenshot src="scenarios/lifecycle-3.png" caption="Scenario with red dot indicators" bordered />
+
+## Live scenario
+
+For each scenario, you can activate a single version for use in production. This designated version, referred to as the **Live** version, is utilized to make decisions. You can easily identify if a version is Live from either the scenario list panel or the scenario version picker.
+
+<Screenshot src="scenarios/lifecycle-4.png" caption="Only the second scenario is currently live" bordered />
+
+:::note[Only **live** scenarios are making decisions]
+
+:::
+### Prepare a scenario version
+
+Some version requires asynchronous preparation to be ready for activation. This step is not always required for activation. If you do need preparation, the top right button will let you know.
+
+1. Select the version you want to prepare
+2. Click on the top right `Prepare` button
+3. The process may take a few minutes. When complete, the button will change to Activate.
+
+   <Screenshot src="scenarios/lifecycle-5.png" caption="Prepare a scenario version" bordered />
+
+:::note[Preparation is distinct from activation. After successful preparation, you must activate a version to make it live.]
+
+:::
+### Activate a scenario version
+
+1. Select the version you want to activate
+2. Click on the top right `Activate` button
+
+<Screenshot src="scenarios/lifecycle-6.png" caption="Activate a scenario version" bordered />
+
+:::note[Only one version can be live at a time. Activating a new version replaces the current live version.]
+
+:::
+### Deactivate a scenario version
+
+1. Select the live version you want to deactivate
+2. Click on the `Deactivate` top right button
+
+   <Screenshot src="scenarios/lifecycle-7.png" caption="Deactivate a live scenario" bordered />
+
+:::note[Deactivation halts decision-making for the scenario. Simply activate to change the live version.]
+
+:::

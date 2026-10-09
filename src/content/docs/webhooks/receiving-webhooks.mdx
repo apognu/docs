@@ -1,0 +1,311 @@
+---
+title: "Receiving webhooks"
+---
+
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+## Validating webhooks
+
+### Verifying the signature
+
+Our webhooks are signed using HMAC-SHA256 to ensure that only Marble can send webhooks to your endpoint. **You must verify the signature** using the endpoint secret before accepting any incoming
+webhook.
+
+#### Signature format
+
+The signature is sent in two equivalent headers (both contain the same value):
+
+* `Webhook-Signature` (standard)
+* `X-Convoy-Signature` (legacy, for backwards compatibility, will be removed after April 2026)
+
+The header value has the following format: `t={unix_timestamp},v1={signature_1}`. For example:
+
+`t=1706745600,v1=K7Q3wFbKxM5JhNqM1Z3rN7+z9nKk2hJ7mFpLdG8xQ0Y=`
+
+When multiple secrets are active (during secret rotation), additional signatures are appended:
+
+`t=1706745600,v1=...,v2=...`
+
+#### Computing the expected signature
+
+1. Extract the timestamp `t` and signature(s) `v1`, `v2`, ... from the header
+2. Build the signed payload string: `{timestamp},{raw_request_body}`
+3. Compute the HMAC-SHA256 of this string using your endpoint secret as the key
+4. Base64-encode the result (standard encoding, with padding)
+5. Compare your computed signature against any of the `vN` values in the header
+
+**Critical**: the JSON body must be used exactly as received, byte-for-byte. Do not parse and re-serialize it before computing the signature.
+
+#### Using a client library
+
+Below are some examples of how to verify Marble webhooks:
+
+<Tabs syncKey="code">
+  <TabItem label={"Go"}>
+
+```go
+package main
+
+import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
+)
+
+func HandleWebhook(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	secret := "your_endpoint_secret"
+	sigHeader := r.Header.Get("Webhook-Signature")
+
+	if err := verifySignature(body, sigHeader, secret, 1*time.Hour); err != nil {
+		http.Error(w, "invalid signature", http.StatusUnauthorized)
+		return
+	}
+
+	// Process the webhook event
+	w.WriteHeader(http.StatusOK)
+}
+
+func verifySignature(payload []byte, sigHeader, secret string, tolerance time.Duration) error {
+	parts := strings.Split(sigHeader, ",")
+	if len(parts) < 2 {
+		return fmt.Errorf("invalid signature header")
+	}
+
+	if !strings.HasPrefix(parts[0], "t=") {
+		return fmt.Errorf("missing timestamp")
+	}
+	ts, err := strconv.ParseInt(strings.TrimPrefix(parts[0], "t="), 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid timestamp")
+	}
+
+	if time.Since(time.Unix(ts, 0)).Abs() > tolerance {
+		return fmt.Errorf("timestamp outside tolerance")
+	}
+
+	signedPayload := fmt.Sprintf("%d,%s", ts, string(payload))
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(signedPayload))
+	expected := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+
+	for _, part := range parts[1:] {
+		eqIdx := strings.Index(part, "=")
+		if eqIdx == -1 {
+			continue
+		}
+		sig := part[eqIdx+1:]
+		if hmac.Equal([]byte(sig), []byte(expected)) {
+			return nil
+		}
+	}
+	return fmt.Errorf("no matching signature")
+}
+
+```
+
+  </TabItem>
+  <TabItem label={"JavaScript"}>
+
+```javascript
+const crypto = require("crypto");
+
+// Using Express
+app.post("/my/webhook/url", function (req, res) {
+  const body = req.rawBody; // Must be the raw bytes, not parsed JSON
+  const sigHeader = req.headers["webhook-signature"];
+  const secret = "your_endpoint_secret";
+
+  if (!verifySignature(body, sigHeader, secret, 300)) {
+    return res.status(401).send("Invalid signature");
+  }
+
+  const event = JSON.parse(body);
+  // Process the webhook event
+  res.sendStatus(200);
+});
+
+function verifySignature(payload, sigHeader, secret, toleranceSec) {
+  const parts = sigHeader.split(",");
+  if (parts.length < 2) return false;
+
+  if (!parts[0].startsWith("t=")) return false;
+  const ts = parseInt(parts[0].slice(2), 10);
+  if (isNaN(ts)) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  if (Math.abs(now - ts) > toleranceSec) return false;
+
+  const signedPayload = `${ts},${payload}`;
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(signedPayload)
+    .digest("base64");
+
+  for (const part of parts.slice(1)) {
+    const eqIdx = part.indexOf("=");
+    if (eqIdx === -1) continue;
+    const sig = part.slice(eqIdx + 1);
+    if (crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+      return true;
+    }
+  }
+  return false;
+}
+```
+
+  </TabItem>
+  <TabItem label={"Ruby"}>
+
+```ruby
+require "openssl"
+require "base64"
+require "json"
+
+class WebhooksController < ApplicationController
+  skip_before_action :verify_authenticity_token
+
+  def receive
+    body = request.raw_post
+    sig_header = request.headers["Webhook-Signature"]
+    secret = ENV["WEBHOOK_ENDPOINT_SECRET"]
+
+    unless verify_signature(body, sig_header, secret)
+      head :unauthorized
+      return
+    end
+
+    payload = JSON.parse(body)
+    # Process the webhook event
+    head :ok
+  end
+
+  private
+
+  def verify_signature(payload, sig_header, secret, tolerance_sec = 300)
+    parts = sig_header.split(",")
+    return false if parts.length < 2
+
+    return false unless parts[0].start_with?("t=")
+    ts = parts[0].sub("t=", "").to_i
+
+    return false if (Time.now.to_i - ts).abs > tolerance_sec
+
+    signed_payload = "#{ts},#{payload}"
+    expected = Base64.strict_encode64(
+      OpenSSL::HMAC.digest("SHA256", secret, signed_payload)
+    )
+
+    parts[1..].any? do |part|
+      eq_idx = part.index("=")
+      next false if eq_idx.nil?
+      sig = part[(eq_idx + 1)..]
+      OpenSSL.fixed_length_secure_compare(sig, expected) rescue sig == expected
+    end
+  end
+end
+```
+
+  </TabItem>
+  <TabItem label={"Python"}>
+
+```python
+import hashlib
+import hmac
+import base64
+import time
+from flask import Flask, request
+
+app = Flask(__name__)
+
+def verify_signature(
+    payload: bytes, sig_header: str, secret: str, tolerance_sec: int = 300
+) -> bool:
+    parts = sig_header.split(",")
+    if len(parts) < 2:
+        return False
+
+    if not parts[0].startswith("t="):
+        return False
+    try:
+        ts = int(parts[0][2:])
+    except ValueError:
+        return False
+
+    if abs(time.time() - ts) > tolerance_sec:
+        return False
+
+    signed_payload = f"{ts},{payload.decode('utf-8')}"
+    expected = base64.b64encode(
+        hmac.new(secret.encode(), signed_payload.encode(), hashlib.sha256).digest()
+    ).decode()
+
+    for part in parts[1:]:
+        eq_idx = part.find("=")
+        if eq_idx == -1:
+            continue
+        sig = part[eq_idx + 1 :]
+        if hmac.compare_digest(sig, expected):
+            return True
+        return False
+
+@app.route("/webhook", methods=["POST"])
+def handle_webhook():
+    body = request.get_data()  # Raw bytes, not parsed JSON
+    sig_header = request.headers.get("Webhook-Signature", "")
+    secret = "your_endpoint_secret"
+
+    if not verify_signature(body, sig_header, secret):
+        return "Invalid signature", 401
+
+    # Process the webhook event
+    return "", 200
+
+```
+
+  </TabItem>
+</Tabs>
+
+You must use `SHA256` as the hash method, base64 encoding, and your endpoint's secret (see the "[Setting up the webhooks](/webhooks/setting-up-the-webhooks/)" section).
+
+### Verify the timestamp
+
+The signature header includes a Unix timestamp (t=...) representing when the webhook was sent. You should verify that this timestamp is within an acceptable tolerance window (e.g. 1 hour) from the current time. This protects against replay attacks, where a malicious third party intercepts a webhook and resends it later.
+
+All code examples above include timestamp verification. Note that the timestamp represents the time the webhook was sent (regenerated for each delivery attempt), not the time of the original trigger event (which is in the payload body).
+
+You should also make your webhook handling idempotent, but timestamp verification lets you reject stale webhooks without any database reads.
+
+### Rotating the secret
+
+Secret rotation is supported seamlessly. When a new secret is created, Marble signs each webhook with all active secrets and includes all signatures in the header (`v1={sig1},v2={sig2}`). Your consumer should accept the webhook if any of the signatures match — all code examples above handle this automatically.
+
+The old secret remains valid for a configurable transit period, giving you time to update your endpoint to use the new secret.
+
+### Retries
+
+If your endpoint responds with any status code other than 2XX, or if it does not respond within the configured timeout (up to 30 seconds), the webhook will be retried with exponential backoff, up to 24 times over approximately 10 days:
+
+| Attempt | Delay after failure |
+| :------ | :------------------ |
+| 1       | 30 seconds          |
+| 2       | 2 minutes           |
+| 3       | 10 minutes          |
+| 4       | 1 hour              |
+| 5       | 4 hours             |
+| 6+      | 12 hours            |
+
+After 12 failed attempts, the delivery is marked as permanently failed.
+
+This is another reason for implementing idempotent handling of the webhooks, because a given webhook can be delivered more than once.

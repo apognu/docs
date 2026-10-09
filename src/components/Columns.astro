@@ -1,0 +1,23 @@
+---
+// Lays out its children side by side: each direct child is one column. Stacks on narrow screens.
+---
+
+<div class="columns not-content">
+	<slot />
+</div>
+
+<style>
+	.columns {
+		display: grid;
+		grid-auto-flow: row;
+		gap: 1rem;
+		align-items: start;
+	}
+
+	@media (min-width: 50rem) {
+		.columns {
+			grid-auto-flow: column;
+			grid-auto-columns: minmax(0, 1fr);
+		}
+	}
+</style>

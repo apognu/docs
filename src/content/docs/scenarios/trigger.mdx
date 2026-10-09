@@ -1,0 +1,58 @@
+---
+title: "Trigger"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Trigger conditions
+
+On the Trigger tab, you visualize the trigger object picked at scenario creation. You can add a [Formula](/scenarios/formula/) to validate in order to fine tune when the scenario should execute.
+
+The trigger Formula is a set of conditions, evaluating to a boolean:
+
+* if it results to `false`, the scenario will not evaluate the trigger object
+* if it results to `true`, the scenario will evaluate the trigger object and provide an outcome
+
+<Screenshot src="scenarios/trigger-1.png" caption="Trigger formula example" bordered />
+
+## How to run this scenario ?
+
+### API Execution
+
+All scenarios can be executed to request a decision by API. The scenario\_id necessary for this is displayed in the scenario page's Trigger tab, and should be added to your payload when calling the [Decision API](/api/v1/#tag/decisions/POST/decisions).
+
+<Screenshot src="scenarios/trigger-2.png" bordered />
+
+This is the right option if you want to run real-time decisions. In that case, we strongly recommend that you first call the Decision API, then ingest the object, as explained in the chart below.
+
+<Screenshot src="scenarios/trigger-3.png" caption="When using real-time decisions, you should call the Decision API before the Ingestion" width="600px" bordered />
+
+### Batch execution
+
+If you do not need a real-time decision, and rather want to run your scenario on all your data matching the [Trigger conditions](#trigger-conditions), you can schedule recurrent executions or launch it manually:
+
+#### Scheduled execution
+
+On the draft version of your scenario, you can configure the schedule on which it should be run:
+
+1. Tick the checkbox *Run this scenario on a schedule* under **Batch Execution**
+2. Choose whether you want to run your scenario:
+   1. Daily at a specific time
+   2. Weekly on a specific day
+   3. Monthly on a specific day number
+
+<Screenshot src="scenarios/trigger-4.png" caption="Set the schedule of your recurrent executions" bordered />
+
+Note that you can see the past executions of your scheduled scenario by clicking on the *Schedule executions* button from the **Batch** section of the scenario.
+
+<Screenshot src="scenarios/trigger-5.png" caption="See your scenario's past executions" width="500px" />
+
+When using scheduled scenario executions, keep in mind that you should ingest all your data, either in real-time or by batch, and then your scenario will be run, when scheduled, on each objects matching the conditions criteria. Here is the expected flow:
+
+<Screenshot src="scenarios/trigger-6.png" caption="For a scheduled execution, ingest all your objects and wait for the automatic execution" width="600px" bordered />
+
+#### Manual execution
+
+Additionally, you can also run your scenario manually, which can be useful to make sure your scenario works well during your test phase or to trigger decisions on past data after creating a scenario for example.
+
+To do so, just click the *Launch now* button on the **Batch** section of the scenario (screenshot above).

@@ -1,0 +1,17 @@
+---
+title: "Optional debugging and monitoring configuration"
+---
+
+Self-hosted Marble comes with some optional configuration related to debugging, observability and monitoring:
+
+1. Enable Prometheus metrics sampling on the `/metrics` endpoint on the worker and API with `ENABLE_PROMETHEUS`.
+   * Note that the endpoint is **not authenticated**. Not exposing the endpoint on public networks is the responsibility of the deployer.
+   * The detail of metrics that are collected by Marble is **still subject to change**, and as such is not documented yet.
+2. In case of unexplained memory leaks of CPU spikes, profiling can be activated and configured with the `DEBUG_ENABLE_PROFILING`, `DEBUG_PROFILING_MODE` and `DEBUG_PROFILING_TOKEN` variables. See table above.
+   * Activating http debug profiling activates the `/debug/pprof/{profile|goroutine|heap|threadcare|block|mutex}` endpoints.
+   * No guarantees are given on the output format of the endpoints.
+   * `gcp` mode debugging requires the `roles/cloudprofiler.agent` (or equivalent) role on the API/worker service account.
+3. Activate Opentelemetry tracing with `ENABLE_TRACING=true`
+   * Select otlp trace collector or GCP tracing APIs with `TRACING_EXPORTER`
+   * Custom sampling rates with `TRACING_SAMPLING_RATES`
+4. Set `LOG_LEVEL` to `"debug"` for more verbose logs (disclaimer: debug logging presence is not uniform throughout the application features).

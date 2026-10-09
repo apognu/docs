@@ -1,0 +1,81 @@
+---
+title: "Configuration and response time"
+---
+
+## Life cycle of a screening search
+
+A screening rule performs a search on sanction, politically exposed persons and adverse media lists and returns the hits by decreasing similarity score, returning only entities above a matching threshold and up to a maximum configured number of hits.
+
+In order to do this, Marble must:
+
+1. generate a number of candidate hits using a naive initial search
+2. then apply the full scoring logic on every hit and order them
+
+The implication is that generating many candidates is best for accuracy (a very high number of candidates in the initial search increases the chance that all "real" hits have been included for the second step), but increases the response time.
+
+As a rule of thumb, a typical search will take 100-200ms for the initial candidate search, and another 100-300ms to score and order them, for a full response time of 200-500ms for a screening search. Step 1 is relatively constant in time (the time passed may be higher for names that are statistically over-represented in the lists present in the datasets), but step 2 is roughly proportional in time to the number of candidate hits returned by step 1. Properly configuring Marble is then important to guarantee a fast enough response time for decisions with screening rules.
+
+## Configuring the screening engine
+
+### Infrastructure
+
+Using Marble with screening rules requires connecting to the [Opensanctions API](https://www.opensanctions.org/api/) or to a self-hosted [yente](https://www.opensanctions.org/docs/yente/) search engine. The self-hosted solution requires an [Elasticsearch cluster](https://www.opensanctions.org/docs/yente/deploy/) to run.
+
+### Optimize your index size
+
+By default, Yente is going to index all entities in the `default` scope of the catalog. At the time of writing, it contains a few million entities. The search query (before any scoring) is going to scale linearly with the overall size of the index, which means the more your limit its size, the speedier your queries will be.
+
+If you know for a fact that you will only be searching through a fixed list of datasets, you can configure the Yente indexer to only synchronize those datasets. The benefit will be two-fold: the indexing process will take less time to complete, and the scoring queries will be faster.
+
+Let's imagine we know all of our scenarios will be screening on the `fr_senat` and `fr_assemblee` datasets, we can create the following `manifest.yml` file:
+
+```yaml
+catalogs:
+  - url: "https://data.opensanctions.org/datasets/latest/index.json"
+    resource_name: entities.ftm.json
+    scopes:
+      - fr_senat
+      - fr_assemblee
+```
+
+At the next reindex event, only those two datasets will be synchronize, and the size of the index will go from a few million to around 10,000.
+
+You can change this list at any moment, and the index will be updated appropriately at the next indexing event. The scope list can contain either datasets, or collections, such as `us_sanctions`.
+
+### Parameters
+
+For self-hosted users only, the [YENTE\_MATCH\_CANDIDATES](https://www.opensanctions.org/docs/yente/settings/) environment variable of yente configures how many candidates are generated in step 1. described above, relative to the number of hits requested in the request.
+
+The number of hits requested (`MAX_HITS` in the following) is chosen in the Marble settings page at /settings/scenarios under the label "Limit of hits before refinement" (a request that returns more results than this will force the analyst to refine the search manually before reviewing the hits). Note that there is no strong reason to use a very large value of `MAX_HITS` - our estimation is that analysts will usually not manually flag 5-10 hits as false positives and rather refine the search if there are more hits.
+
+The number of candidates generated for a search is equal to `NUM_CANDIDATES = MAX_HITS * YENTE_MATCH_CANDIDATES`. We suggest keeping NUM\_CANDIDATES below 50 if you aim for a fast response time.
+
+The managed Marble instance sets `YENTE_MATCH_CANDIDATES=3`, while the default parameter for a self-deployed yente instance is `YENTE_MATCH_CANDIDATES=10`. Applications that are not too time-sensitive can improve the precision of the screening by keeping a larger value of `YENTE_MATCH_CANDIDATES`.
+
+### Scalability of screening searches
+
+The considerations above on the response time for a screening search are most relevant for the response time distribution of individual screening search requests, and are relatively independent of the rate at which searches are done.
+
+As a first order approximation, the rate at which searches are performed should scale horizontally with the number (and size of) the yente search engine instance, as long as the backend Elasticsearch cluster has enough memory available.
+
+We recommend running the yente application with the entrypoint `uvicorn yente.asgi:app` and a value of the `WEB_CONCURRENCY` proportional to your number of cores (typically between `nb_cores` and `2*nb_cores+1`, but we recommend you test what setting works best for your setup).
+
+### \[BETA] Replace yente with motiva
+
+:::note
+This is provided as beta software, please reach out to us if you encounter any blocking issue as compared with how Yente works.
+:::
+
+Another Open-Source product, <a href="https://github.com/apognu/motiva" target="_blank" rel="noopener">motiva</a>, is a reimplementation of part of Yente, featuring more efficient resource management, and faster scoring and could be used as a replacement for the scoring API part of Yente. It supports `logic-v1` as a scoring algorithm.
+
+It is not a complete replacement, so still requires the Yente indexer as well as the Yente API to alongside it, and might produce slightly different results, but can be used in situations where high throughput is required.
+
+You can deploy it by running the provided Docker image (`ghcr.io/apognu/motiva:latest`) with the following environment:
+
+* `INDEX_URL`: same Elasticsearch URL as the one used on Yente
+* `YENTE_URL`: URL to your already running Yente instance
+* `CATALOG_URL`: shoud be `$YENTE_URL/catalog`
+
+Once this is running, you can point your Marble backend to use this API (running on port 8000 by default) instead of Yente by changing `OPENSANCTIONS_API_URL`.
+
+Browse the project's README for more configuration options.

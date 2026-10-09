@@ -1,0 +1,38 @@
+---
+title: "Rules"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Rules list
+
+On the Rules tab you will see the scenario's list of rules, and you will be able to:
+
+* Search or sort rules by named, description or rule group
+* Open an existing rule
+* Create a new rule
+
+<Screenshot src="scenarios/rules-1.png" bordered />
+
+## Rule detail
+
+By clicking on an existing rule or creating a new one, you navigate to the rule detail view. Here, you can:
+
+* **Edit** this rule
+* **Clone** this rule
+* **Delete** the rule
+
+### Edit rule detail
+
+:::danger[Do not forget to save your changes, or they'll be lost]
+
+:::
+A rule is composed of:
+
+* **Name**: A concise label used to identify the rule throughout the application.
+* **Description**: A reminder of the rule's purpose for users.
+* **Rule group**: A tag to identify rules related to a same topic.
+* **Score**: If the rule evaluates to true, this score will be added to the global score.
+  * A **positive score** increases the risk of the global score.
+  * A **negative score** decreases the risk of the global score.
+* [Formula](/scenarios/formula/): Describes how to evaluate the rule.

@@ -1,0 +1,33 @@
+---
+title: "Integrated analytics"
+description: "Tuning Marble to use the integrated analytics module, with production-grade performance"
+---
+
+Tuning Marble to use the integrated analytics module, with production-grade performance
+
+As of v0.57, Marble includes a fully integrated analytics engine to display and export statistics on decisions, screening and the case manager. This works without any external dependencies (other than a blob storage bucket, already required to deploy the product), but requires some tuning to guarantee good performance in a production environment.
+
+### Test deployment
+
+**At the most basic level, integrated analytics will work just by configuring the `ANALYTICS_BUCKET_URL` environment variable on the api and background worker containers**. This should be a properly formatted blob storage bucket URL, as described in the note below.
+
+:::caution
+This feature is only compatible with S3 and GCS, not Azure blob storage, as of Dec 2025. Azure blob storage option will be added on request for paying customers. S3-compatible solutions should allow offset-based file reading for good performance.
+:::
+
+### Production deployment
+
+Under the hood, the integrated analytics in Marble works with a DuckDB query engine running on the API server, reading parquet files from the bucket, exported periodically (every hour at most) by the background worker.
+
+On the worker side, this may create dozens of Postgres database connections, every hour.
+
+On the server side, by default, analytics queries will run in the container in `NumCPU*4` threads by default (controlled by `DUCKDB_THREADS`), which risks blocking other, higher priority, work on the API. We **strongly** recommend doing one of the following for a production deployment:
+
+1. Ideally (especially on serverless environments such as Cloud Run, Amazon ECS, or environments where pods have access to controlled cpu ressources such as Kubernetes): deploy a secondary analytics container, that does not share cpu with the api server, executed with the `--analytics` arg instead of the `--server` arg, to handle analytics queries. Point the api server to it with the `ANALYTICS_PROXY_API_URL` environment variable. Tune the `ANALYTICS_TIMEOUT` on both containers as needed in case of request timeouts.
+2. If the above is not possible, prefer a much more conservative setting of `DUCKDB_THREADS` (typically, at most `NumCPU - 2` on most deployments) to avoid impacting production workflows with analytics queries at the risk of slower analytics query response, especially during instance cold start.
+
+In either case, note that retrieving files from the blob storage takes up an important fraction of the initial query execution time, and that the data from the parquet files are put in an in-memory cache once queried. **As a consequence cache hits and performance are optimized on long-lived server instances**. As an illustration, Marble's SaaS offering uses a Cloud Run instance with 6 vCPU, 1 minimum instance, per-request billing to keep billing low and optimize response time.
+
+:::note
+The pre-0.57 embedded Metabase dashboard remains accessible, on a purely optional basis, for customers with a license. It is configured with the `METABASE_*` environment variables. For self-hosted customers only, this can be a convenient way of exposing more BI data directly in the Marble app.
+:::

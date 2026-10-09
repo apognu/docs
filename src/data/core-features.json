@@ -1,0 +1,80 @@
+[
+  {
+    "label": "Detection",
+    "columns": 2,
+    "items": [
+      {
+        "title": "Scenario",
+        "icon": "ph:film-slate-duotone",
+        "href": "/scenarios/editing-a-scenario/",
+        "description": "A set of rules that tackles a specific risk or type of events."
+      },
+      {
+        "title": "Rules",
+        "icon": "ph:ruler-duotone",
+        "href": "/scenarios/rules/",
+        "description": "A combination of conditions modfying the risk score of an event."
+      },
+      {
+        "title": "Formula",
+        "icon": "ph:flask-duotone",
+        "href": "/scenarios/formula/",
+        "description": "Advanced computations you can use into your rules."
+      },
+      {
+        "title": "Screening",
+        "icon": "ph:magnifying-glass-duotone",
+        "href": "/scenarios/formula/",
+        "description": "Set up your screenings on Sanctions, PEP, or Adverse media lists."
+      }
+    ]
+  },
+  {
+    "label": "Investigation",
+    "columns": 3,
+    "items": [
+      {
+        "title": "Case Manager",
+        "icon": "ph:suitcase-duotone",
+        "href": "/case-manager/overview/",
+        "description": "Everything you need for your investigations, all in a single place."
+      },
+      {
+        "title": "Workflows",
+        "icon": "ph:magic-wand-duotone",
+        "href": "/workflows/workflows-configuration/",
+        "description": "Create automations to adapt to your processes."
+      },
+      {
+        "title": "Configurations",
+        "icon": "ph:wrench-duotone",
+        "href": "/case-manager/configuration/",
+        "description": "Set up your Case Manager to improve your efficiency."
+      }
+    ]
+  },
+  {
+    "label": "Settings",
+    "columns": 3,
+    "items": [
+      {
+        "title": "Webhooks",
+        "icon": "ph:webhooks-logo-duotone",
+        "href": "/webhooks/introduction/",
+        "description": "Use webhooks to get alerted on specific events."
+      },
+      {
+        "title": "Roles management",
+        "icon": "ph:identification-badge-duotone",
+        "href": "/settings/roles/",
+        "description": "Define your team roles."
+      },
+      {
+        "title": "IP Allow list",
+        "icon": "ph:globe-duotone",
+        "href": "/settings/ip-allow-list/",
+        "description": "Set up your Case Manager to improve your efficiency."
+      }
+    ]
+  }
+]

@@ -1,0 +1,132 @@
+/* Marble brand colors, taken from the ReadMe docs (primary #5A50FA). */
+:root {
+	/* One content width for every page; the table of contents column is narrowed to make room for it. */
+	--sl-content-width: 60rem;
+	--marble-toc-width: 15rem;
+
+	--marble-primary: #5a50fa;
+	--marble-primary-dark: #4337f9;
+	--marble-on-primary: #fff;
+
+	--sl-color-accent-low: #1f1b5c;
+	--sl-color-accent: #5a50fa;
+	--sl-color-accent-high: #c8c4fd;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #ebeafe;
+	--sl-color-accent: #5a50fa;
+	--sl-color-accent-high: #4337f9;
+	--sl-color-bg-sidebar: var(--sl-color-black);
+	--sl-color-bg-inline-code: var(--sl-color-gray-6);
+}
+
+/* Header: solid brand color, as on ReadMe's "solid" header theme. */
+.page > .header {
+	background-color: var(--marble-primary);
+	border-bottom-color: rgb(255 255 255 / 0.15);
+	color: var(--marble-on-primary);
+}
+
+.header .site-title {
+	color: var(--marble-on-primary);
+}
+
+.header .site-title img {
+	height: 2.25rem;
+}
+
+.header site-search > button[data-open-modal] {
+	background-color: rgb(255 255 255 / 0.12);
+	border-color: transparent;
+	color: rgb(255 255 255 / 0.85);
+}
+
+.header site-search > button[data-open-modal]:hover {
+	background-color: rgb(255 255 255 / 0.2);
+	border-color: transparent;
+	color: var(--marble-on-primary);
+}
+
+.header site-search > button[data-open-modal] kbd {
+	background-color: rgb(255 255 255 / 0.15);
+	color: var(--marble-on-primary);
+}
+
+.header .social-icons a,
+.header .social-icons a:hover {
+	color: var(--marble-on-primary);
+}
+
+.header .social-icons::after {
+	border-inline-end-color: rgb(255 255 255 / 0.3);
+}
+
+.header starlight-theme-select label {
+	color: var(--marble-on-primary);
+}
+
+.header starlight-theme-select option {
+	color: initial;
+	background-color: initial;
+}
+
+.sl-menu-button {
+	background-color: rgb(255 255 255 / 0.15);
+	color: var(--marble-on-primary);
+}
+
+/* Sidebar: uppercase section labels and a tinted (not filled) current page, like ReadMe. */
+.sidebar-content .top-level > li > details > summary .group-label .large {
+	font-size: var(--sl-text-xs);
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--sl-color-gray-3);
+}
+
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+	background-color: var(--sl-color-accent-low);
+	color: var(--sl-color-text-accent);
+}
+
+/* Links in content use the brand color. */
+.sl-markdown-content a:not(:where(.not-content *)) {
+	color: var(--sl-color-text-accent);
+}
+
+/* Tabs: active tab label in the brand color, like ReadMe. */
+starlight-tabs [role='tab'][aria-selected='true'] {
+	color: var(--sl-color-text-accent);
+}
+
+/* Same layout maths as Starlight's TwoColumnContent and PageSidebar, with a narrower table of contents column. */
+@media (min-width: 72rem) {
+	.right-sidebar-container {
+		width: max(
+			var(--marble-toc-width),
+			calc(var(--marble-toc-width) + (100% - var(--sl-content-width) - var(--marble-toc-width)) / 2)
+		);
+	}
+
+	[data-has-sidebar][data-has-toc] .main-pane {
+		width: min(
+			calc(100% - var(--marble-toc-width)),
+			calc(var(--sl-content-width) + (100% - var(--sl-content-width) - var(--marble-toc-width)) / 2)
+		);
+	}
+
+	.right-sidebar-panel .sl-container {
+		width: calc(var(--marble-toc-width) - 2 * var(--sl-sidebar-pad-x));
+		max-width: none;
+	}
+}
+
+/* Content images are centered, like on ReadMe. */
+.sl-markdown-content :is(p, figure) > :is(img, starlight-image-zoom-zoomable) {
+	display: block;
+	width: fit-content;
+	margin-inline: auto;
+}

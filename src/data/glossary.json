@@ -1,0 +1,46 @@
+[
+  {
+    "term": "Scenario",
+    "definition": "An ensemble of rules, used to make decisions based on events or ingested data. It is comprised of a trigger condition (indicating when the scenario is relevant), a set of rules, and score thresholds."
+  },
+  {
+    "term": "Decision",
+    "definition": "The outcome of a scenario. It contains the detailed numeric score, an outcome (accept, review, reject), as well as the payload used to trigged the decision and the detail of the rules used to take it and their results."
+  },
+  {
+    "term": "Outcome",
+    "definition": "High level result of a scenario execution, stored in a decision. Can be \"approve\", \"review\", \"decline\". Obtained by comparing the decision score to the thresholds configured on the scenario version."
+  },
+  {
+    "term": "Score",
+    "definition": "The integer value by which a rule increases (or decreases) the decision score, if the rule evaluated to True. Compared to the scenario score thresholds to determine the outcome."
+  },
+  {
+    "term": "Trigger",
+    "definition": "An object from the data model. It serves as the entry point for a scenario: as part of the payload for API decisions (an event), or an ingested object for scheduled executions."
+  },
+  {
+    "term": "Variable",
+    "definition": "An aggregation, computed over ingested data, that is used to compute the result of a rule. E.g: \"the average amount of transactions over a 1 month window relative to the payload reference timestamp\"."
+  },
+  {
+    "term": "Backtest",
+    "definition": "Feature allowing to test run a draft version of a scenario against historical data, to analyze the scenario result statistics."
+  },
+  {
+    "term": "List",
+    "definition": "A list of values. Can be used in the decision engine to check if a scalar string is in/is not in the list (exact match or fuzzy match or \"contains\" match). Can be used in particular to implement black/whitelists shared beetween scenarios."
+  },
+  {
+    "term": "Builder",
+    "definition": "A user with the rights to create or modify a draft version of a scenario."
+  },
+  {
+    "term": "Publisher",
+    "definition": "A user with the rights to commit and activate a draft scenario version, or to activate a previously committed version."
+  },
+  {
+    "term": "Rule",
+    "definition": "A formula, computed from data in the payload, ingested data, and custom lists. Its output is a boolean result (true or false) and a change in the decision score."
+  }
+]

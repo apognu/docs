@@ -1,0 +1,41 @@
+---
+title: "Setting up the webhooks"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Subscribe to webhooks
+
+Webhook subscriptions are set up from the Settings/API section.
+
+The subscription is configured by providing an endpoint URL, and optionally a list of webhook events to subscribe to and a timeout delay (30sec default).
+
+Only `https://` endpoints are authorized. URLs targeting internal network IP ranges, and a series of other protected IP ranges are forbidden by default, but can be enabled with an environment configuration for self-hosted users (see [link](technical-configuration)).
+
+:::note
+**Endpoint reachability test**
+
+The endpoint URL you configure must be reachable when you configure a new endpoint. A HEAD, GET and POST ping request will be sent to test its reachability (in that order, stopping if one request succeeds). One at least of those requests must return a 2XX status code to confirm reachability.
+:::
+
+Several webhook subscriptions can be created for a given organization.
+
+You can also delete an existing webhook endpoint from the details page.
+
+## Webhook secrets
+
+Once the endpoint is set up, you can read the endpoints secret value in the details panel. You will need this to verify incoming webhooks (see the [receiving webhooks](/webhooks/receiving-webhooks/)  section). Store it somewhere safe.
+
+A new secret version can be generated from the webhooks detail page. When doing so, you will be prompted to select a number of days after which the existing secret will expire. While several secrets are active, webhooks will be sent with several signatures, one per secret, so that you can continue verifying incoming webhook while you change the secret on your webhooks service.
+
+***
+
+<Screenshot src="webhooks/setting-up-the-webhooks-1.png" caption="Empty state webhooks" />
+
+***
+
+<Screenshot src="webhooks/setting-up-the-webhooks-2.png" caption="set up a new webhook endpoint" width="50%" />
+
+***
+
+<Screenshot src="webhooks/setting-up-the-webhooks-3.png" caption="webhook endpoint details" />

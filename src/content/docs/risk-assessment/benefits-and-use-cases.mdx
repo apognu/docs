@@ -1,0 +1,99 @@
+---
+title: "Benefits and use cases"
+---
+
+## Why a Dedicated CRA Engine?
+
+Most transaction monitoring platforms are designed to catch risky events. Customer Risk Scoring addresses a different and complementary question: **how risky is this customer, structurally, over time?**
+
+The distinction matters. A single suspicious transaction might be a false positive. A customer who has been operating in a high-risk geography, through a high-risk acquisition channel, with steadily growing cross-border volume for a year — that is a different kind of signal, one that is invisible to a system focused purely on events.
+
+Marble's Customer Risk Scoring gives your compliance team a continuous, structured answer to that question, automatically maintained as your customer base evolves.
+
+***
+
+## Key Benefits
+
+### Always-on, low-maintenance risk assessment
+
+Once configured, scoring runs continuously without manual intervention. New customers are scored on ingestion. Existing customers are refreshed when their profile changes, when an analyst looks at their case, or when the max recompute interval elapses — whichever comes first. You don't need to schedule batch jobs or rebuild CRA spreadsheets periodically.
+
+### Risk levels that reflect the full customer profile
+
+Transaction monitoring rules are well-suited to catching anomalous events. Customer risk scoring is suited to something different: capturing the inherent risk of a customer based on who they are, what they do, and how they operate — factors that tend to be stable over time.
+
+By separating these two concerns, your monitoring becomes more accurate: you can apply stricter alert thresholds in your transaction monitoring scenarios for customers already assessed as high-risk, and lighter thresholds for low-risk customers, reducing both false positives and false negatives.
+
+### Traceable, auditable methodology
+
+Every score is derived from explicit rules with documented categories and conditions. Your risk methodology is encoded directly in the platform — not in a spreadsheet maintained by one person, not in an undocumented model. When regulators or auditors ask how a customer ended up at a given risk level, the answer is in the system.
+
+### Safe iteration with versioning and backtesting
+
+Compliance methodologies evolve. Regulations change, new risk typologies emerge, your portfolio shifts. With versioned rulesets and built-in backtesting, you can:
+
+* Develop a new scoring methodology in draft without affecting live scores
+* Backtest it against a sample of your current customers before activating
+* Switch back to a previous version instantly if needed
+
+No big-bang migrations. No anxiety about what activating a new methodology will do to your portfolio.
+
+### Controlled downgrade with cooldown periods
+
+A customer who temporarily no longer meets the conditions for a high risk level shouldn't automatically drop to a lower level the next day. The configurable cooldown period gives your team time to review the customer before the score falls, and prevents gaming — either by customers or by edge cases in your data.
+
+***
+
+## Typical Use Cases
+
+### CDD / EDD risk tiering
+
+Classify your customer base into risk tiers (e.g. standard, enhanced, high) for the purpose of Customer Due Diligence. High-risk customers can be automatically surfaced for periodic review, while standard-risk customers follow lighter-touch processes. Marble keeps the classification current as customer data changes.
+
+### Risk-differentiated transaction monitoring
+
+Use the customer's risk level as a variable in your transaction monitoring scenarios. For example:
+
+* Flag transactions above €5,000 for level-1 customers
+* Flag transactions above €2,000 for level-3 customers
+
+This makes your monitoring more targeted and reduces noise across the board.
+
+### Periodic review prioritization
+
+When your team needs to conduct periodic CRA reviews, the customer risk level (and its history) gives reviewers a structured starting point. High-risk customers can be prioritized; customers with stable low scores can follow a lighter review cadence.
+
+### Onboarding risk assessment
+
+New customer data flows into Marble via ingestion. The scoring engine computes a risk level automatically as part of the onboarding flow, giving your operations team an immediate signal without any manual work.
+
+### PEP and sanctions interaction
+
+Screening tags (PEP status, sanctions hits, adverse media) can directly influence scoring via screening tag rules. A customer flagged as a PEP can automatically receive a score modifier and a minimum risk level floor, reflecting your policy on PEP relationships — all within the same scoring framework as your other risk factors.
+
+### Portfolio monitoring and trend analysis
+
+The scoring overview page shows you the distribution of risk levels across your entire customer base. As your portfolio grows and evolves, you can track whether the overall risk profile is shifting — and detect if configuration changes or new customer segments are moving customers in unexpected directions.
+
+***
+
+## What Customer Risk Scoring Is Not
+
+Customer Risk Scoring is designed for **structural, slow-moving risk signals**. It is not a real-time transaction alert engine.
+
+Good inputs for scoring:
+
+* Customer geography, nationality, and legal form
+* Acquisition channel and onboarding method
+* KYC data and business activity type
+* Long-running transaction aggregates (6-month, 1-year windows)
+* Screening status (PEP, sanctions, adverse media)
+* Custom tags set by analysts based on case findings
+
+Poor inputs for scoring (use transaction monitoring rules instead):
+
+* Individual transaction characteristics
+* Short-window aggregates (daily, weekly)
+* Real-time behavioral signals
+
+The rule of thumb: if the signal changes week to week, it belongs in transaction monitoring. If it characterizes the customer over months or years, it belongs in the scoring ruleset.

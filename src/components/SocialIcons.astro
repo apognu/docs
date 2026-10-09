@@ -1,0 +1,24 @@
+---
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+
+const href = '/api/v1/';
+const current = Astro.url.pathname.startsWith(href);
+---
+
+<a {href} class="header-link" aria-current={current ? 'page' : undefined}>API reference</a>
+<Default />
+
+<style>
+	.header-link {
+		font-size: var(--sl-text-sm);
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--sl-color-text-accent);
+	}
+
+	.header-link:hover,
+	.header-link[aria-current='page'] {
+		text-decoration: underline;
+		text-underline-offset: 0.3em;
+	}
+</style>

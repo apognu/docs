@@ -1,0 +1,138 @@
+---
+title: "Overview"
+description: "What CRA is, main capabilities and configuration options"
+---
+
+What CRA is, main capabilities and configuration options
+
+## What is Customer Risk Scoring?
+
+Customer Risk Scoring is Marble's built-in Customer Risk Assessment (CRA) engine. It lets you assign a structured risk level to each of your customers — continuously and automatically — based on your own rules, thresholds, and tolerance for risk.
+
+Rather than scoring customers only at onboarding or on an ad-hoc basis, Marble keeps risk levels fresh over time: scores are recomputed as customer profiles evolve, as new transactions accumulate, as screening results change, and as analysts interact with cases.
+
+***
+
+## Risk Levels
+
+Your organization chooses how many risk levels to operate with — between **3 and 6**, from lowest to highest risk. The choice is made once at the organization level and applies to all scoring configurations.
+
+> **Note:** This setting is permanent and shared across your entire organization. Choose carefully — it reflects your internal risk appetite framework and will inform how scores are displayed and used downstream.
+
+Risk levels are numbered from **1** (lowest) to **N** (highest, where N is 3–6). Level boundaries are defined by numeric score thresholds you configure in each ruleset.
+
+***
+
+## Rulesets
+
+A **ruleset** is the configuration that defines how customer risk levels are computed for a given entity type in your data model (typically your end-customer or user table).
+
+Each ruleset is **versioned**. You can maintain multiple versions and switch the active version at any time — without immediately rescoring all customers. This makes it safe to iterate on your methodology and test changes before going live.
+
+Ruleset versions have two statuses:
+
+* **Draft** — being edited, not yet applied
+* **Committed** — finalized and eligible to be set as the active version
+
+### Ruleset Parameters
+
+Each ruleset version is configured with:
+
+| Parameter                  | Description                                                                                                                                                                 |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Score thresholds**       | N−1 numeric thresholds that define the boundaries between risk levels                                                                                                       |
+| **Max recompute interval** | The maximum time allowed before a customer's score must be refreshed, even without any triggering event                                                                     |
+| **Cooldown period**        | The minimum time a customer must remain at a given risk level before being allowed to move to a **lower** level, even if their profile no longer justifies the higher level |
+
+The cooldown period is a deliberate friction mechanism: it prevents customers from rapidly cycling in and out of higher risk levels and gives your team time to act.
+
+***
+
+## Rules
+
+Risk levels are computed by evaluating all rules in the active ruleset. Each rule:
+
+* Outputs a **score modifier** (positive, zero, or negative — negative modifiers can represent factors that reduce risk)
+* Optionally enforces a **minimum risk level floor** regardless of the total score
+
+The final risk level for a customer is determined by:
+
+1. Taking the highest minimum level floor enforced by any triggered rule
+2. Comparing the total aggregated score against the configured thresholds
+3. Returning whichever of the two results in the higher risk level
+
+### Rule Categories
+
+Rules are organized into categories aligned with standard risk assessment frameworks (FATF risk factors):
+
+| Category                  | Covers                                                              |
+| ------------------------- | ------------------------------------------------------------------- |
+| **Customer features**     | Who the customer is — identity, legal status, professional activity |
+| **Service provided**      | What products or services the customer uses                         |
+| **Distribution channels** | How the customer accesses and uses your platform                    |
+| **Transaction execution** | How and where the customer transacts                                |
+| **Geo risks**             | Geographies the customer is associated with                         |
+| **Other**                 | Any additional risk factors                                         |
+
+### Rule Input Types
+
+Rules can be built on five types of inputs:
+
+**1. Customer attributes** — Raw fields from your ingested customer data (strings, numbers, booleans). String values can be matched against fixed lists or dynamic custom lists, with exact or fuzzy matching. Numeric values are compared against configured ranges.
+
+**2. Transaction and event aggregates** — Computed aggregates over ingested data linked to the customer (e.g. total cash disbursements over 6 months, count of cross-border transfers over 1 year). Same numeric and string condition types apply.
+
+**3. Custom tags** — Tags manually assigned to the customer by your team in the case manager.
+
+**4. Screening tags** — Sanctions, PEP, adverse media, and other flags surfaced by entity screening.
+
+**5. Past confirmed risk** — Whether the customer has been linked to one or more confirmed risk cases or alerts.
+
+Each rule contains a series of **conditions** evaluated against the input value — similar to a `CASE WHEN` construct — where each condition specifies what score modifier and/or minimum level applies when triggered.
+
+***
+
+## Score Computation Triggers
+
+A customer's score is recomputed automatically in the following situations:
+
+* **New customer object ingested** — computed asynchronously after ingestion
+* **Profile viewed** in the case manager or customer hub — computed synchronously on demand
+* **Score used in a scenario rule** — computed synchronously if no prior score exists; asynchronously in the background if a previous score is already available
+* **Screening or custom tags updated** — recomputed asynchronously
+* **Max recompute interval elapsed** — a background worker slowly processes customers whose scores have aged past the configured interval
+* **Ruleset first activated** — triggers a gradual backfill of all customers using the background worker
+
+***
+
+## Score Distribution and Backtesting
+
+The scoring overview page shows the **distribution of customers across risk levels** for the currently active ruleset version.
+
+Before activating a new ruleset version, you can run a **backtest**: Marble evaluates the new version against a random sample of your customers and shows you a projected distribution of risk levels, so you can estimate the impact before going live.
+
+***
+
+## Manual Score Override
+
+Analysts with the appropriate permissions can manually override a customer's risk level. Overrides can be set with an optional expiry date, after which the score reverts to the ruleset-computed value.
+
+***
+
+## Where Risk Levels Are Used
+
+Once computed, customer risk levels feed into the rest of the Marble platform:
+
+* **Case manager** — displayed on the customer profile for analysts
+* **Customer hub** — full risk level history visible on the customer profile page
+* **Transaction monitoring scenarios** — the customer's risk level can be used as a condition in rules, enabling risk-differentiated thresholds (e.g. apply stricter checks for level-3 customers than level-1)
+* **AI case review agent** — customer risk level is provided as context when Marble's AI agent analyzes a case
+
+***
+
+## Access and Permissions
+
+| Role                      | Capabilities                                                               |
+| ------------------------- | -------------------------------------------------------------------------- |
+| Admin, Scenario Publisher | Create, edit, and activate rulesets; view all scoring configuration        |
+| Case Manager              | View customer risk levels and history; cannot access ruleset configuration |

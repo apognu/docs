@@ -1,0 +1,73 @@
+---
+title: "Grouping decisions"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Context
+
+### Why group decisions
+
+Decisions in Marble are created on entities such as a `transaction` or `account`, that are declared in the data model edition interface. Because every organization's data model is different, there is no generic hierarchy to data model objects that allows *by default* to correlate all decisions related to a same customer.
+
+:::tip[Note]
+For simplicity we use the work "customer" below, to indicate the data entity in the user organization's data model. Typically this will correspond to an entity named `user`, `customer`, `company` or likewise. However there may be use cases where decisions should grouped at the level of something that is not a "person", such as an account identifier or crypto wallet hash. The principles below still apply.
+:::
+Grouping decisions by customer is useful because it allows you to have memory from one decision to the next: if you are able to group decisions, you can snooze a rule or group of rules for a customer for a certain time, group alerts into the same case in the investigation interface, annotate the customer with comments, tags and files, explore transactions and events related to the customer in an alert without leaving the Marble application, and more.
+
+A bank will typically want to investigate all (present and past) alerts related to the same customer (natural person, company...) in the same interface, and keep memory from one investigation to the next.
+
+Marble allows you to configure you data so that all decisions taken on an entity (for example a `transaction`) are attached to a related `account` or `user` or `company`.
+
+### Configuration of decision grouping
+
+You configure decision grouping for an entity of the data model from the data model edition interface. At its simplest, all you need to do is select which type of entity related to a base entity (e.g. `transaction`) corresponds to the customer at which level you want to group decisions.
+
+In a more complex data model, decisions on different entities (e.g. `transaction` and `event` and `user`) that are all related to the same `company` entity, will be grouped together provided that all three entities have been configured to point to the `company` entity.
+
+## Applications of grouping decisions in Marble
+
+Once your data model is configured so that decisions are grouped by customer, you can:
+
+* In the case investigation interface, directly access all the data related to that customer, annotate the customer by writing comments, tags and files on it (you will be able to see them in any future investigations on the same customer), and get links to previous cases on the same customer with their status.
+* Set up a workflow to group all alerts relative to a same customer into the same open investigation (if applicable). See the [documentation on workflows](/workflows/workflows-configuration/)
+* Snooze (temporarily deactivate) a rule or a set of rules for a customer, if an alert has been reviewed and shows that a rule that usually generates alerts, is not relevant for that customer
+* Search all alerts that are related to the same customer (for example searching all decisions on transactions or accounts for a given `company_id`)
+
+## How to configure decision grouping in practice
+
+Decision grouping is configured from the data model edition page, in its "schema" view ([https://app.checkmarble.com/data/schema](https://app.checkmarble.com/data/schema) if you are not using a self-hosted Marble instance). You must first create you entities and links: you can only define a "related customer" for an entity that links that this customer entity, directly or indirectly.
+
+**Step by step:**
+
+<Screenshot src="data-model/grouping-decisions-1.png" alt="Start with a complete data model, including links" caption={"Start with a complete data model, including links. Click \"Create a decision group\" to get started"} bordered />
+
+<Screenshot src="data-model/grouping-decisions-2.png" caption="Choose which entity (linked directly or indirectly from the entity you are updating) corresponds to the end customer, at which level you want to perform the investigations." width="70%" bordered />
+
+<Screenshot src="data-model/grouping-decisions-3.png" caption="If there is more than one path (following links) from the starting entity to the target entity, choose which path(s) to follow" width="700px" bordered />
+
+<Screenshot src="data-model/grouping-decisions-4.png" alt="Visualize the decision grouping configuration on the transactions table" width="700px" bordered>Visualize the decision grouping configuration on the `transactions` table...</Screenshot>
+
+<Screenshot src="data-model/grouping-decisions-5.png" caption="... or visualize a sneak peak of the configuration on the table header" width="700px" />
+
+:::tip[Special case where the entity itself represents the customer]
+There is one special case, where the entity *itself* represents the customer. For example, in the example above, if we configure decision grouping for decisions made on the `companies` entity.
+
+In this case, the configuration is the same, though the second step (link selection) is skipped.
+:::
+:::note[Fallback mechanism for tables without any links]
+As a limited support special case, you may correlate alerts related to the same customer, based on an entity without links to other entities, by selecting a field of that entity to group by. However, we recommend you rather create a "parent" customer entity and link to it, even if you do not intend to write any specific data on it, for full support in the investigation interface.
+
+<Screenshot src="data-model/grouping-decisions-6.png" width="40%" bordered />
+:::
+
+### Grouped decisions in practice
+
+A typical case investigation for a customer that had previous alerts and some comments attached might look like this in the case manager "customer" right panel:
+
+<Screenshot src="data-model/grouping-decisions-7.png" width="50%" bordered />
+
+### Limitations
+
+* The configuration is create-only, so make sure to double check your input. You can contact us if you wrongly configured decision grouping for a table, and we will help you sort it out.
+* When this option is configured for a table, the relevant customer id will be stored on every new decision created thereafter, but not on past decisions.

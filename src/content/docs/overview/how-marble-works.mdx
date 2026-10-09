@@ -1,0 +1,64 @@
+---
+title: How Marble works
+description: The key components of Marble — data model, scenarios and rules, the Data Ingestion API and the Decision API.
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+Marble allows anyone to make a `decision` based on a number of predefined `rules` organized in `scenarios`.
+
+To achieve this, we rely on a few key components: a custom `data model` , an `admin panel`, a `Data Ingestion API`, and a `Decision API`
+
+## Define your Data Model
+
+The `data model` is a description of all the objects you’ll want to use in Marble. It includes their fields as well as how they relate to each others.
+
+Defining this data model makes it easy to create rules in the admin panel, and allows a strong validation of data sent to our APIs
+
+Marble does not impose a specific data model for its clients, but our recommended starting point is to work with `users`, `companies`, `accounts`, `events` and `transactions` objects. See the [data model introduction](/data-model/introduction/)
+
+<Screenshot src="overview/data-model-example.png" caption="Example of data model" bordered />
+
+## Create scenarios and rules
+
+From our admin panel, your team will be able to create as many scenarios as needed, each containing a set of rules.
+
+When a scenario runs, we evaluate each of its rules, and increment the scenario’s risk score accordingly.
+
+The scenario’s final score determines a single outcome for the decision: _Approve_, _Review_, _Block and review_ or _Decline_.
+
+Rules can use data from multiple sources: the decision API’s payload, your historical database, our manually-defined lists input from the admin panel.
+
+<Screenshot src="overview/simple-rule.png" caption="A simple rule" bordered />
+
+## Send historical data using the Data Ingestion API
+
+Complex decisions require a large amount of data points, which would be impractical to send at the same time as the decision request.
+
+A typical example is comparing a `transaction`'s amount against the average of past transactions’ amounts for the same user.
+
+Marble can store any number of objects (provided that they conform to your data model) in its warehouse, and those objects can be accessed directly in your rules & scenarios.
+
+The `Data Ingestion API` is the API that lets users push data to Marble. It features a single endpoint per object in your data model: `POST /data_ingestion/{object}`
+
+When receiving an object, Marble will `UPSERT` it into its warehouse.
+
+The Data Ingestion API documentation is located [here](/api/v1/)
+
+## Make decisions using the Decision API
+
+You’re now one API call away from creating decisions: send us an object that conforms to your data model using a `POST /decisions`, and we’ll execute the relevant scenario and return a decision object.
+
+From here, you can check if the decision’s outcome is _Approve_, _Review_, _Block and review_ or _Decline_, and you’ll have access to all the details of the evaluated rules and scenario, so that you can take appropriate actions.
+
+The Decision API documentation is located [here](/api/v1/)
+
+:::note[Recommended Order of API Calls]
+We recommend calling the **Decision API** first, followed by the **Ingestion API**. This approach offers several advantages:
+
+- **Faster response time:** If you're using Marble in real-time, calling the Decision API first avoids the overhead of ingestion processing during the critical path. You can handle ingestion afterward, once the triggering transaction is processed.
+- **Accurate transaction counting:** By calling the Decision API before ingestion, you ensure the transaction isn’t counted twice — especially useful if you're using aggregates. Since the transaction isn't yet stored in your database, it only exists in the payload sent to the API.
+- **Ingest with final status:** Knowing Marble’s outcome in advance allows you to ingest the transaction with its definitive status, eliminating the need for a later `PATCH` request.
+:::
+
+<Screenshot src="overview/decision-ingestion-flow.png" caption="Our recommended Decision/Ingestion flow" width="600px" />

@@ -1,0 +1,75 @@
+/* Scalar brings its own sidebar next to Starlight's, so drop Starlight's page title and content gutters. */
+main:has(.scalar-reference) .content-panel:has(> .sl-container > h1#_top) {
+	display: none;
+}
+
+main:has(.scalar-reference) {
+	--sl-main-pad: 0;
+}
+
+main:has(.scalar-reference) footer {
+	display: none;
+}
+
+main:has(.scalar-reference) .content-panel {
+	padding: 0;
+	border: none;
+}
+
+main:has(.scalar-reference) .sl-container {
+	max-width: none;
+	margin: 0;
+}
+
+/* Starlight spaces consecutive blocks, and plugins (image zoom) add elements before the content. */
+main:has(.scalar-reference) .sl-markdown-content {
+	margin-top: 0;
+}
+
+/* Scalar styles <body> for its own color mode; keep Starlight's background behind the page. */
+body:has(.scalar-reference) {
+	background-color: var(--sl-color-bg);
+}
+
+/* Map Scalar's theme onto Starlight's colors, so both follow the same palette and light/dark mode.
+ * Scalar sets its theme on inner `.light-mode` / `.dark-mode` elements (inside CSS layers), so target those too. */
+.scalar-reference,
+.scalar-reference :is(.light-mode, .dark-mode) {
+	--scalar-color-1: var(--sl-color-white);
+	--scalar-color-2: var(--sl-color-gray-2);
+	--scalar-color-3: var(--sl-color-gray-3);
+	--scalar-color-accent: var(--sl-color-text-accent);
+	--scalar-link-color: var(--sl-color-text-accent);
+	--scalar-link-color-hover: var(--sl-color-white);
+	--scalar-background-1: var(--sl-color-bg);
+	--scalar-background-2: var(--sl-color-gray-6);
+	--scalar-background-3: color-mix(in srgb, var(--sl-color-gray-5) 50%, var(--sl-color-gray-6));
+	--scalar-background-accent: var(--sl-color-accent-low);
+	--scalar-border-color: var(--sl-color-hairline);
+
+	--scalar-button-1: var(--sl-color-accent);
+	--scalar-button-1-color: var(--marble-on-primary);
+	--scalar-button-1-hover: var(--marble-primary-dark);
+
+	--scalar-sidebar-background-1: var(--sl-color-bg-sidebar);
+	--scalar-sidebar-color-1: var(--sl-color-white);
+	--scalar-sidebar-color-2: var(--sl-color-gray-2);
+	--scalar-sidebar-border-color: var(--sl-color-hairline);
+	--scalar-sidebar-item-hover-background: var(--sl-color-gray-6);
+	--scalar-sidebar-item-hover-color: var(--sl-color-white);
+	--scalar-sidebar-item-active-background: var(--sl-color-accent-low);
+	--scalar-sidebar-color-active: var(--sl-color-text-accent);
+	--scalar-sidebar-search-background: var(--sl-color-bg);
+	--scalar-sidebar-search-color: var(--sl-color-gray-3);
+	--scalar-sidebar-search-border-color: var(--sl-color-hairline);
+
+	--scalar-font: var(--sl-font, var(--sl-font-system));
+	--scalar-font-code: var(--sl-font-mono, var(--sl-font-system-mono));
+	--scalar-custom-header-height: var(--sl-nav-height);
+}
+
+/* Reserve the space Scalar will take, so the page doesn't jump while it mounts. Only on the wrapper:
+ * Scalar's cards also carry the `.light-mode` / `.dark-mode` classes targeted above. */
+.scalar-reference {
+	min-height: calc(100vh - var(--sl-nav-height));
+}

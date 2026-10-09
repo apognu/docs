@@ -1,0 +1,30 @@
+---
+title: "Screening refine"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+In some cases, the initial search for the sanction check using the input values from the decision is not precise enough, and too many matches need to be reviewed. In this case, it is possible for the analyst to refine the search from the sanction check investigation panel, using additional information gathered from discussions with the end customer, if necessary.
+
+Doing such a search refine can be necessary, if there are more matches than the maximum limit configured at the organization level.
+
+## Choices for a search refine
+
+During the initial screening in the decision, the entity search is done by name only.
+
+When the analyst refines the search, they may have additional information on the counterparty that is being screened, for instance whether it is a person or organization, or its address. Hence, a more precise search can be done at the refine level.
+
+A refined search is possible for the following entity types:
+
+* any entity: search by name only
+* person: search by name, birth date, nationality, ID document number, address
+* organization (company or public body): search by name, country, registration number, address
+* vehicle (plane or vessel): search by name, registration number
+
+<Screenshot src="screening/screening-refine-1.png" caption="Choose the type of entity to search from, depending on the information available" width="75%" bordered />
+
+<Screenshot src="screening/screening-refine-2.png" caption="sanction check with too many matches (search is too general)" width="70%" bordered />
+
+<Screenshot src="screening/screening-refine-3.png" caption="The analyst can add more search parameters for a more precise manual search" width="65%" bordered />
+
+<Screenshot src="screening/screening-refine-4.png" caption="no matches (or fewer matches) are found. Iterate on the search parameters, or save the new sanction screening results to the case" width="75%" bordered />

@@ -1,0 +1,16 @@
+---
+title: "Creating decisions with a screening rule"
+---
+
+Decisions that includes a screening are created in just the same way as standard rules on a scenario, except for the aspects discussed below.
+
+## Error cases
+
+Below are some caveats to keep in mind:
+
+* If all the values passed to the screening (counterparty name and transaction label, derived from the payload values and/or from ingested data) are either *null* or empty strings, then the screening has an error status but the decision is still created.
+* If the external dependency (OpenSanctions managed API or self-hosted OpenSanctions API) is not reachable, or fails to respond with a 200 status code, the decision is not created and the API returns an error code.
+
+## Latency considerations
+
+A decision including a screening rule must make a request to an API that may take a few hundred milliseconds to respond, with little scope for optimization. This gives a baseline for the average execution time of scenarios that include a sanction check.

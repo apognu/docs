@@ -1,0 +1,72 @@
+---
+title: "Rule snoozes"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+At Marble, we believe that rules are useful to keep risk under control, because they give you flexibility and explainability. However, it is well known that rules for risk detection are prone to false positives, when a certain user’s behavior repeatedly triggers a rule despite their usage having been human-reviewed and deemed acceptable.
+
+In order to reduce false positive alerts in those cases, we provide the rule snoozing feature (not included in the open-source free plan).
+
+## Rule snooze editing interface
+
+Rule snoozes are created in the case manager. They cannot be created “ex nihilo”. Instead, a rule snooze must be created in the context of a decision that is within a case, to guarantee that there has been a human review of the decision (and to keep an audit trace message in the case).
+
+Any user of the organisation that is a member of the inbox may view and create rule snoozes on decisions contained in a case of that inbox.
+
+Rule snoozes are created for a maximum duration of 180 days, after which you must renew them if you want to keep them.
+
+To snooze a rule, follow these simple steps:
+
+1. Click the **Snooze rules** button, just above the alerts tables
+
+   <Screenshot src="case-manager/rule-snoozes-1.png" width="600px" bordered />
+
+2) Click the **Snooze** button on the rule you want to snooze
+
+   <Screenshot src="case-manager/rule-snoozes-2.png" width="600px" bordered />
+
+3. Selection the **duration of the snooze**, enter a comment (recommended for the audit trail) and click Snooze.
+
+   <Screenshot src="case-manager/rule-snoozes-3.png" width="600px" bordered />
+
+### Audit trail
+
+A full history of which rule has been snoozed for which end user, and who configured it, is available.
+
+Moreover, you are invited to write a comment to justify the rule snooze, and an event is logged in the case to which the decision belongs,  every time a rule is snoozed.
+
+No interface is currently available to systematically view and edit rule snoozes outside the context of a case, but may be developed in the future.
+
+## Rule snoozes and pivot values
+
+Similarly to what happens for decision to case automatic workflows, snoozing a rule is only possible in the context of a given end user (or any similar entity in the data model you configured). Therefore you can only snooze a rule from a decision that verifies the following conditions:
+
+* the scenario used to create the decision has a trigger object on which a pivot value has been defined (that allows to identify which end user entity a decision on this scenario is related to)
+* the decision used as entry point to create the snooze actually has a non-null pivot value : this depends in the most general case on the payload used to create the decision, and on past ingested data
+
+If you want to use the rule snoozing feature, you should first configure a [pivot value](/data-model/grouping-decisions/) in your data model and make sure all the data necessary to compute it is present.
+
+## Rule snoozes and rule versioning
+
+In Marble, rules do not exist by themselves, but always as part of a scenario version. Therefore versioning is also handled at the scenario version level, with rules being the detailed content of the scenario versions.
+
+A natural expectation is that when a rule has been snoozed for a given user, it remains to for its full duration, even iff the rule is modified thereafter. Prior to release v0.19 of Marble, there was no explicit way to reconcile successive versions of a rule (other than ambiguous reconciliation based on the rule name or description).
+
+With the rule snooze feature, all successive versions of a rule (defined as successive copies of a rule created as new drafts from the current version, which can then be modified before they are committed to a version) share a set of rule snoozes.
+
+New rules (including rules created by cloning an existing rule) start with a fresh (empty) set of rule snoozes.
+
+:::note
+### The following section can be safely ignored if you never move back to older versions of a scenario. However, you should read it if you occasionally do so, as it may lead to unexpected behaviour (at first sight).
+:::
+
+Assume you have a rule “rule A” in 3 successive versions of a scenario (1, 2 and 3). Assume also that the first rule snooze for rule A was created on version 2 of the scenario.
+
+Note that when a rule snooze is created from a decision, it is in fact created for the version of this rule that was used to compute this decision (which may be different from the currently active version of this same scenario).
+
+Unexpected behavior related to snoozes (notably, missing or lost rule snoozes) may be observed in the following cases:
+
+* you reactivate an old version of a rule - specifically, a version older than the first rule snooze created for a given rule (in this example, version 1) : it will not use rule snoozes created on the newer versions, and conversely any rule snoozes created on this old version will not be forwarded to the newer versions
+* you create a new draft (and a new chain of versions) from an old version of a rule - specifically, a version older than the first rule snooze created for a given rule (in this example, you create new versions 4 and 5 by creating a new draft using version 1 as a basis): this will create a new lineage of rules that do not share their rule snoozes with the more recent versions. (in this example, versions 2&3 and 4&5 have distinct sets of rule snoozes)
+* you create two series of successive versions from a same version that has at least a rule snooze (in this example, version 2): the rules may diverge in content, but they will always continue sharing their sets of rule snoozes. **\[this is unlikely to happen in a real environment, but is listed here for the sake of completeness]**

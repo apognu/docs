@@ -1,0 +1,52 @@
+---
+title: "Autonomous Decision Generation with Marble"
+description: "Automate data ingestion and decision-making."
+---
+
+Automate data ingestion and decision-making.
+
+Now that Marble is assisting with decision-making for your company, we'll automate the manual processes for pushing data to Marble and retrieving decisions.
+
+* Data will be sent to Marble via API calls to our [Ingestion API](/api/v1/#tag/ingestion)
+* All decisions will continue to run on a schedule.
+* Decisions will be retrieved automatically
+
+This setup is ideal for implementing more advanced use cases, such as:
+
+* Close, regular reviews of objects (users, transactions, etc.), running once or multiple times per day.
+* Post-transaction reviews.
+* Rotating reviews based on team schedules.
+
+## Automated Data Ingestion
+
+In the POC phase, data entry was manual, making the process highly dependent on individuals exporting and importing data. Let's automate this step.
+
+You'll need to involve your tech team for this task. Have them review the [Ingestion API](/api/v1/#tag/ingestion). This API allows you to send updates to Marble whenever changes occur in your system. For example, every time a user is updated or makes a transaction, you should call the Ingestion API.
+
+The API must receive objects that conform to your specific data model. You can find auto-generated API documentation tailored to your data model in your Marble UI [here](https://app.checkmarble.com/data).
+
+There are various ways to implement this, depending on your software architecture and available infrastructure. If you're unsure where to implement this, feel free to contact us.
+
+For reference, we've seen implementations at the core banking and ORM levels (almost real-time when events occur), as well as through data pipelines.
+
+## Automated Decisions Retrieval
+
+Currently, we're automatically generating batches of decisions. While we've removed the need for manual data transfer to Marble, we still rely on someone to log in, download the decisions, and begin processing them in their preferred tool.
+
+Marble offers the capability to automatically push batch decisions to an S3 bucket of your choice, simplifying decision processing:
+
+* Contact Marble to set up your S3 bucket. We'll coordinate to ensure Marble can access a bucket from your infrastructure.
+* All batch decisions will be published to this folder as soon as the batch is completed.
+* You can then easily process these files. A popular approach is to use lambdas/cloud functions to read the file and send the data to the relevant tool or team responsible for handling the decisions.
+
+For reference, users have pushed decisions to ticketing systems like Zendesk or updated their CRMs such as Hubspot.
+
+You can also poll the [decisions API](/api/v1/#tag/decisions/GET/decisions) to read the decisions (though doing so may be impractical with large volumes of transactions).
+
+Additionally, you can use our integrated case manager to manage all investigations within Marble.
+
+## Recap
+
+At this stage, Marble autonomously generates decisions on a regular basis, eliminating the need for human intervention. These decisions are published in your infrastructure and distributed according to your requirements.
+
+From here, you can continue evolving this integration to accommodate a wider range of use cases, gradually progressing towards the goal of achieving real-time decision-making.

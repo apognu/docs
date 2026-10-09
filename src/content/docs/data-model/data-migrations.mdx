@@ -1,0 +1,18 @@
+---
+title: "Data migrations"
+description: "Nature of migrations. How to handle them."
+---
+
+Nature of migrations. How to handle them.
+
+There are different cases where you may need to migrate data, after going live.
+
+For instance:
+
+* removing an unused table or field
+* adding a new field, backfilling values on it
+* any other more complex migration of historical data
+
+Deletion migrations (e.g. deleting a field) to the data model are not possible for now, because they make it hard to keep backward compatibility with existing scenario iterations and the audit trace of past decisions.
+
+We also do not yet propose an interface to backfill values on a new field (or more complex migrations), short of remaking a batch ingestion of all the historical data. If you are using the hosted Marble SaaS, you can reach out to us and we will assist you in migrating the data you need.

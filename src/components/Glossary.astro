@@ -1,0 +1,74 @@
+---
+import { lookup } from '../lib/glossary';
+
+interface Props {
+	/** Glossary term, when the text between the tags differs from it (e.g. `<Glossary term="Rule">rules</Glossary>`). */
+	term?: string;
+}
+
+const text = await Astro.slots.render('default');
+const entry = lookup(Astro.props.term ?? text.replace(/<[^>]+>/g, ''), Astro.url.pathname);
+const id = `glossary-${entry.term.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<span class="glossary" tabindex="0" aria-describedby={id}><Fragment set:html={text} /><span class="tooltip not-content" role="tooltip" id={id}><strong>{entry.term}</strong>{entry.definition}</span></span>
+
+<script>
+	// Keep the tooltip inside the content column (it would otherwise slide under the sidebar near the edges).
+	const place = (term: Element) => {
+		const tooltip = term.querySelector<HTMLElement>('.tooltip');
+		const bounds = term.closest('.sl-markdown-content')?.getBoundingClientRect();
+		if (!tooltip || !bounds) return;
+		tooltip.style.setProperty('--shift', '0px');
+		const rect = tooltip.getBoundingClientRect();
+		const shift = Math.max(bounds.left - rect.left, 0) + Math.min(bounds.right - rect.right, 0);
+		tooltip.style.setProperty('--shift', `${shift}px`);
+	};
+
+	for (const term of document.querySelectorAll('.glossary')) {
+		term.addEventListener('mouseenter', () => place(term));
+		term.addEventListener('focusin', () => place(term));
+	}
+</script>
+
+<style>
+	.glossary {
+		position: relative;
+		text-decoration: underline dotted;
+		text-decoration-color: var(--sl-color-text-accent);
+		text-underline-offset: 0.2em;
+		cursor: help;
+	}
+
+	.tooltip {
+		position: absolute;
+		z-index: 10;
+		bottom: calc(100% + 0.5rem);
+		left: 50%;
+		transform: translateX(calc(-50% + var(--shift, 0px)));
+		width: max-content;
+		max-width: min(20rem, 80vw);
+		padding: 0.5rem 0.75rem;
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 0.375rem;
+		background-color: var(--sl-color-black);
+		box-shadow: var(--sl-shadow-md);
+		color: var(--sl-color-gray-2);
+		font-size: var(--sl-text-sm);
+		font-weight: normal;
+		line-height: 1.5;
+		text-align: start;
+		/* Not just invisible: hidden tooltips must not widen the page near the right edge. */
+		display: none;
+	}
+
+	.tooltip strong {
+		display: block;
+		color: var(--sl-color-white);
+	}
+
+	.glossary:hover .tooltip,
+	.glossary:focus .tooltip {
+		display: block;
+	}
+</style>

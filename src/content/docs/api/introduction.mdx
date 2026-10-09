@@ -1,0 +1,66 @@
+---
+title: Introduction
+description: Versioning, authentication, response format and pagination of the Marble REST API.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The Marble API is a REST API.
+
+It has predictable resource-oriented URLs, accepts form request bodies, returns JSON responses, and uses standard HTTP response codes, authentication, and verbs.
+
+Feel free to browse through [How Marble works](/overview/how-marble-works/) to understand our various concepts as well.
+
+## Versioning and stability
+
+All endpoints in the Marble API are versioned, with the targeted version in the URI path. Some versions may be suffixed by the `beta` keyword, indicating the endpoints implemented there are **not subject** to any stability contract and may change without notice.
+
+Within a stable version, all contracts are guaranteed — barring functional issues requiring a schema change to fix — to be stable.
+
+## Authentication
+
+All endpoints in the Marble API are authenticated with an API key that can be generated in the Marble app within **Settings > API keys**. The API key must be added to your requests as a bearer token within the `authorization` header.
+
+<Tabs syncKey="request">
+  <TabItem label="HTTP">
+    ```http
+    GET /endpoint
+    authorization: Bearer theapikey
+    ```
+  </TabItem>
+  <TabItem label="cURL">
+    ```sh
+    curl https://api.checkmarble.com/v1beta/endpoint -H 'authorization: Bearer theapikey'
+    ```
+  </TabItem>
+</Tabs>
+
+## Response schema
+
+All responses from the Marble API are formatted as a JSON object containing the data that was requested. This object will contain the following fields:
+
+- `data`: an object or array of objects containing the requested data.
+- `pagination` (optional): an object containing information about how to request the next page, if applicable.
+- `metadata` (optional): a free-form object containing metadata. Refer to the API documentation to know where it is used and the per-endpoint schema.
+
+## Pagination
+
+When requesting a list of objects, we may paginate the response, depending on the requested resource, to limit the amount of data processed and sent per call. When that is the case, the `pagination` field of the response will be provided, indicating whether or not there is a next page, and the necessary cursor to request it.
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "has_more": true,
+    "next_page_id": "cursor"
+  }
+}
+```
+
+When `has_more` is `true`, you are able to produce the same request with the value of the cursor in an `after` query parameter in order to receive the next page worth of resources.
+
+```sh
+curl 'https://api.checkmarble.com/v1beta/endpoint?after=cursor' -H 'authorization: Bearer theapikey'
+```
+
+Some endpoints will accept parameters allowing one to control the sorting order and number of items returned by the request. For those endpoint (as indicated in their documentation), the parameters will always be `limit`, taking the number of items to return, and `order`, accepting `ASC` or `DESC`.

@@ -1,0 +1,63 @@
+---
+title: "Search & scoring algorithm"
+---
+
+The search and scoring algorithm works in two steps:
+
+1. **Candidate generation**
+2. **Candidate scoring**
+
+Both steps matter when interpreting the output of a search.
+
+## Candidate generation
+
+When we receive a search query — typically a name, optionally with other fields like date of birth, registration number, or country — we first run an initial query against a search engine (Elasticsearch, to be precise). This step searches primarily by name, in several ways:
+
+* **Fuzzy full name matching**, normalized so that characters are simplified (e.g. `é` → `e`, case folding, etc.). These come up at the top of the results list.
+* **Token-based matching**: the input name is cut into pieces, and search is done using both the unmodified (normalized) name parts and a phonetic transformation of those parts.
+
+If secondary search attributes are passed (e.g. birth date or country), they increase the quality of the match: all else being equal, candidates with a matching birth date rank higher.
+
+This step typically generates a large number of candidates — usually in the hundreds or thousands.
+
+At this stage, the score that the threshold is later applied to has not yet been computed. An internal score is used, but only for ordering — its absolute value is not meaningful.
+
+## Candidate scoring
+
+All candidates from step 1 are re-scored by a more precise algorithm. This score is normalized — or more precisely, it depends only on the candidate's attributes and the search query — which makes it meaningful in absolute terms. As a result, it is suitable for display to the user and for applying a threshold.
+
+At a high level, the default algorithm works as follows:
+
+* The main comparison is on the names. An exact literal match yields 100% similarity. Otherwise, the name is split into components, and we apply a combination of string edit distance per component and phonetic match per component. The score is the larger of the two, with a multiplier (by default 80% to 90%).
+* Secondary search attributes (birth date, country, ...) can only **decrease** the score in this step. For example:
+  * Query `name: john doe` against entity `{name: John Doe, birthDate: 1990-01-01}` → matches at 100%.
+  * Query `name: john doe; birthDate: 1975-02-01` against the same entity → matches at 85%.
+
+The final score is compared against the threshold; only candidates above the threshold are returned.
+
+## Remarks on the two-step process
+
+* The most important thing to realize is that a search that is not precise enough can produce **false negatives**, not only excessive false positives. Concretely, this means that PEP and Adverse Media searches in particular are expected to work much better with secondary search attributes such as birth date or country — and not only because there will be fewer false positives.
+* Sanctions, having smaller datasets, is the only area where we expect name-only matching to be very reliable.
+* The number of candidates produced in step 1 currently depends on the "result limit", which is awkward; we intend to change this and use an organization-level default setting instead. If a manual search does not return some results that were expected, raising the "result limit" can be a good workaround.
+
+## Recommendations on matching percentage
+
+Below are example scores you may expect, scenario by scenario:
+
+| Scenario                                                                                      | Expected score |
+| --------------------------------------------------------------------------------------------- | -------------- |
+| Name-only search, exact match                                                                 | 100%           |
+| Name exact match; country or birth-date mismatch                                              | 80%            |
+| Company search, exact name match; registration-number mismatch                                | 80%            |
+| Name match in phonetic only (raw string mismatch); birth-date match or no birth date passed   | 90%            |
+| Partial name match in string components or phonetic; birth-date match or no birth date passed | 60–80%         |
+| Partial name match in string components or phonetic; birth-date or country mismatch           | 40–60%         |
+| Vessel (ship) search; IMO or MMSI exact match                                                 | 95%            |
+| Name-only search; phonetic or string similarity match on half the name (e.g. first name only) | 40–50%         |
+
+In most scenarios, scores below 50% are where matches become almost irrelevant. The fine tuning mostly happens in the 50–80% range, depending on risk sensitivity — but only for limiting false positives. False negatives are handled by more precise filters, not by adjusting the threshold.
+
+## Technical appendix
+
+The components of the algorithm currently used by default with Marble are documented here: [https://www.opensanctions.org/matcher/#logic-v1](https://www.opensanctions.org/matcher/#logic-v1).

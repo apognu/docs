@@ -1,0 +1,65 @@
+---
+title: "Real-Time Processing"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+Now, it's time to shift our focus to real-time decisions. We'll maintain our existing asynchronous decision-making processes and integrate the real-time decisions API for time-sensitive decisions.
+
+* Certain decisions will still be executed on a schedule.
+* Others will be made in real-time to trigger specific actions in your product.
+
+This advancement unlocks use cases such as:
+
+* Real-time transaction monitoring, directly within the critical path of the transaction.
+* Live user monitoring, during or after onboarding processes.
+
+## Real-Time Scenario
+
+Before proceeding with decision-making, let's create a scenario specifically tailored for real-time decisions. We'll focus on monitoring outgoing transactions where the payment method is a card (`direction = PAYOUT` and `payment_method = CARD`):
+
+<Screenshot src="getting-started/real-time-processing-1.png" caption="Real-time card transactions trigger" width="75%" bordered />
+
+Following our previous steps, let's create the following rules:
+
+* Verify if the card token is listed in the token blocklist.
+  * This requires maintaining a list of known blocked tokens.
+* Determine if the card has been utilized more than once in the last 24 hours, with a total amount exceeding €100.
+* Assess if the card originates from a high-risk country, with a transaction amount exceeding €30.
+  * This necessitates maintaining a list of known high-risk countries.
+* Validate if the card belongs to a low-risk French bank BIN and the transaction amount is less than €80.
+  * This rule will result in a negative score, indicating a lower risk.
+  * Maintaining a list of known low-risk bank BINs is essential.
+* Ascertain if the card has been used more than three times in the last two hours.
+
+<Screenshot src="getting-started/real-time-processing-2.png" caption="Real-time card transactions rules" width="75%" bordered />
+
+Finally, we'll define the following outcomes, each mapped to a specific action in our system:
+
+* 0-20: Approve (This will trigger frictionless transaction approval).
+* 20-80: Review (This will initiate a 3DS challenge).
+* Over 80: Decline (This will reject the transaction).
+
+## Real-time Decisions
+
+To enable real-time decision-making, you'll need the assistance of your development team once again. They'll likely want to refer to our public [decisions API](/api/v1/#tag/decisions/POST/decisions) documentation. Similar to the previous step, there's also data-model-aware documentation available in the [Marble UI](https://app.checkmarble.com/data).
+
+At this stage, you'll likely need to integrate Marble into your core banking system.
+
+Let's build upon the scenario we just created:
+
+1. A card authorization request reaches your product
+2. Your product undergoes the existing required checks (e.g., ensuring the user has sufficient funds).
+3. You create a decision in Marble using the [decisions API](/api/v1/#tag/decisions)
+4. Depending on the decision's outcome, you trigger specific actions in your product. As a reminder of our intentions when building the scenario:
+   1. **Approve**: Triggers frictionless transaction approval.
+   2. **Review**: Internally initiates a 3DS challenge.
+   3. **Decline**: Internally rejects the transaction.
+
+In this scenario, setting up real-time decision-making is more intricate, but you typically handle the response programmatically, in real-time, eliminating the need for further steps.
+
+## Recap
+
+Congratulations, you have now successfully gone through a full-fledge Marble implementation !
+
+From here, you can always edit your scenarios while keeping a clear audit trail, and you can also have a look at our case manager, which allows you to handle manual reviews on accounts or transactions.

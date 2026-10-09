@@ -1,0 +1,165 @@
+---
+title: "Overview"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## Introduction
+
+The **Case Manager** is designed to provide analysts with a streamlined, focused, and efficient workspace for investigating fraud cases. With dynamic action panels, context-aware views, and powerful data exploration tools, it minimizes manual effort, enhances compliance, and lays the foundation for a more automated case management.
+
+:::note
+#### **Tip:** Configure your escalation inboxes and data display for optimal efficiency: [Configuration Guide](/case-manager/configuration/)
+:::
+
+***
+
+## Inboxes
+
+Cases are organized in **inboxes**. You can create as many inboxes as you need, based on the type of alerts or level of investigations for example (\_see [Escalations\_](/case-manager/overview/#escalation)).
+
+Click on **My inbox**  to access your **dedicated personal inbox** that consolidates all cases assigned to you — regardless of their original shared inbox.
+
+* View your investigations in one place
+* Cases are prioritized by date and status for efficient triage
+
+  <Screenshot src="case-manager/overview-1.png" bordered />
+
+:::note
+If you are looking for a **closed case**, click on **Add new filter** → **Closed only**.
+:::
+
+***
+
+## Key Features
+
+The Case Manager offers many features designed to streamline your investigations and reduce manual effort. The image below highlights the main components of the interface — each of which is described in detail in the sections that follow.
+
+<Screenshot src="case-manager/overview-2.png" bordered />
+
+### Escalation
+
+Escalate cases to a designated team inbox, ensuring seamless collaboration and proper routing.
+
+* Define target inboxes in your [Inboxes Settings](/case-manager/configuration/#inboxes)
+* All escalations are traceable and auditable
+
+***
+
+### Assignment
+
+Case ownership is designed to be intuitive:
+
+* Click "Assign to myself" to set yourself as the owner of the case
+* A case is automatically assigned to you when you take any action on it
+* You can manually reassign a case to another team member when needed
+
+***
+
+### Case Statuses
+
+Track and manage case progress with clear statuses:
+
+* **Pending** – not yet assigned
+* **In Progress** – currently under review
+* **Closed** – investigation completed
+
+***
+
+### Detection Feedback
+
+When closing a case, you will be able to chose one of the following outcome:
+
+* **False Positive**
+* **Valuable Alert**
+* **Risk Confirmed**
+
+These labels could be used to train your own ML algorithm for example.
+
+***
+
+### Case tag
+
+Add a tag to the case to organize your investigations. You will need to create the tags you want from the [Tags settings](/case-manager/configuration/#tags), and can then modify its name or color at any time.
+
+***
+
+### Next Unassigned Case
+
+Speed up your workflow with a **one-click shortcut** to the oldest unassigned case, allowing rapid triage without interruption.
+
+***
+
+### Case Snoozing
+
+Postpone a case for later review with snoozing functionality: just specify a future reactivation date and the case will reappear at that time.
+
+This is ideal for reminders or investigations requiring external input.
+
+***
+
+### Investigation Panel
+
+See everything that happened on the case since its creation:
+
+* Browse the full event history
+* Filter by the event types that matter to you
+* Add notes and documents to the case
+
+<Screenshot src="case-manager/overview-3.png" bordered />
+
+***
+
+### Alerts Table
+
+Access every alert tied to a case:
+
+* See key details available at a glance
+* Detection rules sorted by relevance (highest score first)
+* Expand panels for full alert insight, as you can see below, by clicking on "eye" icon when hovering an alert
+
+<Screenshot src="case-manager/overview-4.png" bordered />
+
+***
+
+### Rule Snoozing
+
+Quickly snooze detection rules directly from the case manager to deactivate noisy rules temporarily. See more details in [Rule snoozes](/case-manager/rule-snoozes/).
+
+***
+
+### Data Exploration
+
+Conduct deep investigations with access to all objects linked to a customer or case:
+
+* Get information about the object's pivot, and this pivot's pivot
+* Browse transactions, accounts, users, or any data related to the triggering object
+
+<Screenshot src="case-manager/overview-5.png" bordered />
+
+:::note
+In order to explore objects related to the customer, like transactions, you should first click on "Create navigation option" and select the field used to sort the records (e.g. timestamp for creation of the field is often a best practice).
+:::
+
+***
+
+### Annotations
+
+Add comment, tags or files to objects directly from the Clients Concerned tab. These elements can be added:
+
+* to **the pivot**, i.e. your user. These annotations will be visible both in the investigation timeline of the case, and in the right section of every other cases related to the same user.
+
+  <Screenshot src="case-manager/overview-6.png" bordered />
+
+* to **entries in your data exploration**, i.e. other transactions made by the same user. These annotations will be visible every time you meet the same transaction in the data exploration of a case.
+
+  <Screenshot src="case-manager/overview-7.png" bordered />
+
+***
+
+### Past Alerts
+
+Access **alert history** for the same pivot object at the bottom of the right panel:
+
+* View previous alert statuses
+* Identify recurring risk patterns and context

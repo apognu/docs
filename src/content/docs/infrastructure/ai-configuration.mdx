@@ -1,0 +1,86 @@
+---
+title: "AI configuration"
+---
+
+## Configuring AI models
+
+Marble's AI features (case review, rule builder, rule description, screening hit suggestion) each rely on an LLM call. The configuration allows you to choose the model for two **tiers**:
+
+* `light`: fast, cheap steps (summaries, formatting, simple instructions)
+* `heavy`: steps that need a stronger model (generating a rule, writing a full case review)
+
+Each AI feature already knows internally which tier(s) it needs. You configure the *model* behind each tier globally, and optionally per feature.
+
+## Default configuration
+
+Marble ships with a default configuration:
+
+```json
+{
+  "default_light_model": "gemini-2.5-flash",
+  "default_heavy_model": "gemini-2.5-pro",
+  "rule_builder": {
+    "heavy_model": "claude-opus-4-6"
+  }
+}
+```
+
+* `default_light_model` and `default_heavy_model` are the models used for the light and heavy tiers by any feature that doesn't specify its own.
+* `rule_builder` is override: it uses `claude-opus-4-6` instead of the global `default_heavy_model` for its heavy-tier calls.
+
+## Resolution order
+
+For a given feature and tier, Marble resolves the model to use like this:
+
+1. If the feature has an override for that tier, use it.
+2. Otherwise, fall back to the global default for that tier (`default_light_model`\` or `default_heavy_model`).
+
+## Which tier each feature uses
+
+| Feature                  | Key in config              | Uses light           | Uses heavy           |
+| ------------------------ | -------------------------- | -------------------- | -------------------- |
+| Case review              | `case_review`              | :white\_check\_mark: | :white\_check\_mark: |
+| Rule description         | `rule_description`         | :white\_check\_mark: | ❌                  |
+| Rule builder             | `rule_builder`             | ❌                  | :white\_check\_mark: |
+| Screening hit suggestion | `screening_hit_suggestion` | :white\_check\_mark: | ❌                  |
+
+Setting a tier a feature doesn't use has \*\*no effect\*\* on that feature, it's simply never read. For example, `rule_builder` only ever uses heavy, so configuring rule\_builder.light\_model doesn't change any behavior.
+
+## Overriding models for one feature
+
+You don't need to restate the whole configuration to change a single feature. To use a different model only for the rule builder, while keeping Marble's defaults everywhere else:
+
+```json
+{
+  "default_light_model": "gemini-2.5-flash",
+  "default_heavy_model": "gemini-2.5-pro",
+  "screening_hit_suggestion": {
+    "light_model": "gemini-3.6-flash"
+  }
+} 
+```
+
+Every feature without its own entry (`case_review`, `rule_description`, `rule_builder`) keeps resolving to default\_light\_model / default\_heavy\_model.
+
+Available override keys per feature: light\_model, heavy\_model: both optional, use only the one(s) relevant to that feature's tier(s).
+
+## Overriding the configuration in your deployment
+
+If you self-host Marble, you can override the default configuration without modifying anything Marble provides, by setting the environment variable:
+
+`AI_AGENT_MODELS_CONFIG_OVERRIDE_FILE=/path/to/your/override.json`
+
+This points to a local JSON file on your deployment, following the exact same schema described above. It is merged field by field on top of Marble's base configuration:
+
+* Any field you don't set falls back to Marble's base value.
+* You only need to specify what you want to change. For instance, an override file containing just:
+
+```json
+{
+  "rule_builder": {
+    "heavy_model": "your-custom-model"
+  }
+}
+```
+
+* changes only the rule builder's heavy model, leaving default\_light\_model, default\_heavy\_model, and every other feature untouched.

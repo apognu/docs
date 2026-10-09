@@ -1,0 +1,43 @@
+---
+title: Marble Documentation
+description: Documentation for Marble, the open-source fraud and compliance automation platform.
+template: splash
+hero:
+  tagline: The open-source fraud and compliance automation platform for transaction monitoring, AML screening and case investigation.
+  actions:
+    - text: Welcome to Marble!
+      link: /welcome/
+      icon: right-arrow
+    - text: API reference
+      link: /api/introduction/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Marble is built for banks, fintechs, crypto exchanges and any company moving money as part of its core business.
+
+<CardGrid>
+  <Card title="Detection" icon="magnifier">
+    Build your own detection scenarios and rules in no code, and react quickly to new threats.
+  </Card>
+  <Card title="Investigation" icon="document">
+    An AI-powered case manager that replaces spreadsheets and fragmented tools.
+  </Card>
+  <Card title="Open source" icon="github">
+    Marble's core is available under the Elastic License 2.0, as SaaS or on-premise.
+  </Card>
+  <Card title="API first" icon="seti:json">
+    Send data and get decisions in real time through a REST API.
+  </Card>
+</CardGrid>
+
+## Get started
+
+<CardGrid>
+  <LinkCard title="How Marble works" href="/overview/how-marble-works/" description="Data model, scenarios, ingestion and decisions." />
+  <LinkCard title="API introduction" href="/api/introduction/" description="Authentication, versioning and pagination." />
+  <LinkCard title="API reference (v1)" href="/api/v1/" description="Stable endpoints: decisions, screening, batch executions." />
+  <LinkCard title="Beta endpoints" href="/api/v1beta/" description="Cases, tags, async decisions, annotations and more." />
+</CardGrid>

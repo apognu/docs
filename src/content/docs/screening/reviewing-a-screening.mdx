@@ -1,0 +1,52 @@
+---
+title: "Reviewing a screening"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## The case manager
+
+A screening can only be reviewed from within a case (coming soon: review by API for headless usage of the screening feature). In order to act on screenings with possible hits, you should set up a workflow for the scenario that automatically sends every decision with certain outcomes to an inbox in the case manager (see the [workflows page](/workflows/workflows-configuration/)).
+
+Within the case manager, screenings appear next to the rule executions on decisions that contain one. When the screening is in pending review state, it is displayed along with a button that invites the analyst to review it.
+
+<Screenshot src="screening/reviewing-a-screening-1.png" alt="example sanction check rule" caption="example screening rule" width="75%" bordered />
+
+## Reviewing matches in a screening
+
+A screening to review contains one or more possible hits. The possible hits should always be manually reviewed  before rejecting a transaction, because most of them are false positives.
+
+In the detailed page of a screening to review in the case manager, all matches are displayed in the ["follow the money" format](https://www.opensanctions.org/docs/entities/) used by Opensanctions.
+
+Possible matches are reviewed one by one (by changing their status to "no match" or "confirmed match" and leaving a comment. If one hit is marked as confirmed, then all the remaining ones are marked as "skipped".
+
+Additionally, the analysts can upload any files on the screening that were provided by the end user to allow the investigation.
+
+### Whitelisting
+
+Some beneficiaries - anyone with a name close to the name of a person under sanctions - will create false positives. The challenge is that they will repeatedly create false positives, unless they are whitelisted.
+
+This is done at the match review step, and only if a counterparty id selector has been configured on the rule (and a non-empty value is read when the decision is created).
+
+A whitelist entry is composed of the pair `(counterparty_id, opensanctions_entity_id)`. For instance, a scenario may whitelist the pair `(FR7630006000011234567890189, Q7747)`.
+
+Any whitelisted entities will be automatically ignored during future screenings that use the same value of the counterparty identifier.
+
+Note that screening whitelists are not limited in time.
+
+## Business rules related to screenings
+
+Certain rules are applied on a decision that contains a screening:
+
+* if the decision is in `"block_and_review"` state, it cannot be review to the final state `"approved"` as long as the screening is pending review, or if it is a confirmed hit
+
+Moreover, a screening:
+
+* cannot be reviewed (it can only be refined) if the list of returned entities is partial, meaning the search returned more possible hits than the maximum configured at the org level (see [Setting up a screening rule](/screening/setting-up-a-screening-rule/))
+* changes its global status automatically after one of its matches is marked as a real hit, or they have all been reviewed as false positives
+
+<Screenshot src="screening/reviewing-a-screening-2.png" caption="restrictions on decision review status" width="50%" bordered />
+
+## Audit trace
+
+A complete audit trace of screening reviews is kept, including which user reviewed a given match and when.

@@ -1,0 +1,9 @@
+---
+import { RELEASES } from '../lib/home';
+import FeatureCard from './FeatureCard.astro';
+import FeatureGrid from './FeatureGrid.astro';
+---
+
+<FeatureGrid columns={3}>
+	{RELEASES.map((release) => <FeatureCard {...release} />)}
+</FeatureGrid>

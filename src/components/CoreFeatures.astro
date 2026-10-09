@@ -1,0 +1,21 @@
+---
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+import { CORE_FEATURES } from '../lib/home';
+import FeatureCard from './FeatureCard.astro';
+import FeatureGrid from './FeatureGrid.astro';
+---
+
+<Tabs>
+	{
+		CORE_FEATURES.map(({ label, columns, items }) => (
+			<TabItem label={label}>
+				<FeatureGrid columns={columns}>
+					{items.map((item) => (
+						<FeatureCard {...item} />
+					))}
+				</FeatureGrid>
+			</TabItem>
+		))
+	}
+</Tabs>

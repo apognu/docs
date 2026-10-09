@@ -1,0 +1,88 @@
+---
+title: "Available events and webhooks format"
+---
+
+## Available events
+
+All webhook events we handle have the format `{object_type}.{event_action}`.
+
+Below is the full list of events we currently handle with webhooks:
+
+* `case.updated`
+* `case.created_manually`
+* `case.created_from_workflow`
+* `case.decisions_updated`
+* `case.tags_updated`
+* `case.comment_created`
+* `case.file_created` (one or more files created)
+* `case.rule_snooze_created`
+* `case.decision_reviewed`
+* `decision.created`
+* `async_decision.failed`
+* `user_scoring.risk_level_changed`
+* `continuous_screening.created`
+* `continuous_screening.match_reviewed`
+
+This list will be progressively expanded as we add new webhooks options. Please feel free to reach out to us if one specific type of webhook is critical to a workflow you want to implement, and we will discuss with you if we can prioritize it.
+
+## Webhooks format
+
+### Webhook payload content
+
+The webhooks body payload is of the following format:
+
+```json
+{
+  "content": {
+    "{object_type}": {
+      "id": "d4e6aae1-d005-4734-9294-a85d16dd1683",
+			    ... // rest of the payload
+    }
+  },
+  "timestamp": "2024-07-25T13:43:47.888170937Z",
+  "type": "{object_type}.{event_action}"
+}
+```
+
+The detailed content depends on the webhook type, but the data object formats are the same as those used in the "data" part of the response body in our [public API](/api/introduction/).
+
+Some webhooks may contain several object payloads (in cases where several objects are logically related to the webhook's content). For example, the `case.decision_reviewed` webhook contains
+
+```json
+{
+  "content": {
+    "case": {
+      "id": "c455154b-3e6c-4a1b-92b2-96f005c9b130",
+			... // rest of the payload
+    },
+    "decision": {
+      "id": "54624b1f-1396-43e7-9c3a-58dc08ab3449",
+			... // rest of the payload
+    }
+  },
+  "timestamp": "2024-07-25T13:43:47.888170937Z",
+  "type": "case.decision_reviewed"
+}
+```
+
+The timestamp contained in the webhook payload is the timestamp at which the event occurred, not the timestamp at which the timestamp was sent.
+
+### Webhook API versioning
+
+Currently, we only send webhooks corresponding to the Marble public API v1. As such, all webhook subscriptions are implicitly attached to API v1 (or v1beta).
+
+If and when we introduce an API v2, the choice of API version will be given when subscribing to the webhooks.
+
+The API version a webhook event corresponds to is send in the `x-marble-api-version` header.
+
+### Webhook header content
+
+The webhooks received contain the following headers, alongside the default http headers:
+
+* `webhook-event-type`: same content as the body "type", allows you to filter webhook events without parsing the full body
+* `marble-api-version`: API version the payload refers to. One of `v1` and `v1beta` for now.
+* `webhook-signature`: concatenation of a timestamp and a signature `t={unix_ts},v1={signature_1}[,v2=...]`. For instance, the header could take the value `t=1721915034,v1=lWR1+4ro2KOi55lTYx8mJaT4YhtvR2WU1c5lI50Lyrw=`. Optionally, more signatures can be appended (separated by a comma) to allow seamless secret rotation. See the next page about webhook signature verification.
+* **:warning:\[DEPRECATED]** `x-convoy-signature` and `webhooks-signature`: same content as the header above, for backward compatibility, will be removed in the future
+* `user-agent`: Contains `Marble/{version}` where `{version}` is the deployed version number of Marble
+* `webhook-idempotency-key`: unique identifier of the webhook delivery (unique per event x subscription pair)
+* `webhook-event-id`: unique identifier of the event sent (may be dispatched to several subscriptions)

@@ -1,0 +1,13 @@
+---
+title: "IP Allow List"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+The IP Allow List feature allows you to control who can access your Marble instance by defining a list of authorized IP addresses. Only requests coming from these addresses will be accepted, while all others will be denied.
+
+This provides an additional layer of security by ensuring that only trusted environments — such as your company’s servers, VPN, or internal network — can connect to Marble. It helps prevent unauthorized access and keeps your data protected.
+
+To use it, simply go to **Settings** → **IP Allow List** and add as many IPs as you need. Note that you need to add network addresses with their mask, such as *192.168.0.0/24*.
+
+<Screenshot src="settings/ip-allow-list-1.png" caption="Your Marble instance will only be available for users accessing it from your allowed IP addresses." bordered />

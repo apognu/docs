@@ -1,0 +1,24 @@
+---
+import { YouTube as LiteYouTube } from '@astro-community/astro-embed-youtube';
+
+interface Props {
+	/** Video ID or URL, e.g. `2VnMSsmkmuU`. */
+	id: string;
+	title: string;
+}
+
+const { id, title } = Astro.props;
+---
+
+<div class="youtube not-content">
+	<LiteYouTube id={id} title={title} playlabel={`Play: ${title}`} posterQuality="max" />
+</div>
+
+<style>
+	.youtube {
+		max-width: 48rem;
+		margin-inline: auto;
+		border-radius: 0.5rem;
+		overflow: hidden;
+	}
+</style>

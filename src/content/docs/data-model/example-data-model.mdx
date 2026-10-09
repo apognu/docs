@@ -1,0 +1,81 @@
+---
+title: "Example data model"
+description: "Typical demo data model for fintech"
+---
+
+Typical demo data model for fintech
+
+We propose the following basic data model, which should be sufficient for a first implementation of fraud and AML rules for a fintech.
+
+You can reuse it as it is, or modify it and extend it to best suit your usecase.
+
+## transactions
+
+| Field name      | type      | description                                                        |
+| :-------------- | :-------- | :----------------------------------------------------------------- |
+| object\_id      | string    | required base field                                                |
+| updated\_at     | timestamp | required base field                                                |
+| account\_id     | string    | id of the parent account                                           |
+| amount          | number    | amount in minor currency unit                                      |
+| label           | string    | free text label of the transaction                                 |
+| created\_at     | timestamp | initiation timestamp                                               |
+| settled\_at     | timestamp | effective settlement timestamp (if present)                        |
+| payment\_method | string    | enumerated field, identifier of the payment type                   |
+| currency        | string    |                                                                    |
+| status          | string    | enumerated field, status of the transaction (pending, canceled...) |
+
+link `transactions.account_id=accounts.object_id`
+
+## accounts
+
+| Field name  | type      | description                                                 |
+| :---------- | :-------- | :---------------------------------------------------------- |
+| object\_id  | string    | required base field                                         |
+| updated\_at | timestamp | required base field                                         |
+| company\_id | string    | id of the parent company                                    |
+| balance     | number    | balance in minor currency unit                              |
+| status      | string    | enumerated field, status of the account (active, closed...) |
+| balance\_at | timestamp | timestamp of last balance computation                       |
+| type        | string    | type of the wallet (e-money, crypto, bank account...)       |
+
+link `accounts.company_id=companies.object_id`
+
+## companies
+
+| Field name                | type      | description                         |
+| :------------------------ | :-------- | :---------------------------------- |
+| object\_id                | string    | required base field                 |
+| updated\_at               | timestamp | required base field                 |
+| legal\_name               | string    | name of the company                 |
+| kyc\_level                | number    | level of KYC validation             |
+| trade\_name               | string    |                                     |
+| registration\_number      | string    | company legal identification number |
+| corporate\_tax\_id        | string    |                                     |
+| country\_of\_registration | string    | ISO3 country of registration        |
+
+## events
+
+| Field name  | type      | description                        |
+| :---------- | :-------- | :--------------------------------- |
+| object\_id  | string    | required base field                |
+| updated\_at | timestamp | required base field                |
+| type        | string    |                                    |
+| company\_id | string    | id of the related company          |
+| event\_at   | timestamp | timestamp where the event happened |
+
+link `events.company_id=companies.object_id`
+
+## users
+
+| Field name         | type      | description                               |
+| :----------------- | :-------- | :---------------------------------------- |
+| object\_id         | string    | required base field                       |
+| updated\_at        | timestamp | required base field                       |
+| full\_name         | string    |                                           |
+| company\_id        | string    | id of the parent company                  |
+| residence\_country | string    | ISO3 residence country                    |
+| email              | string    | email address                             |
+| birthdate          | timestamp | timestamp corresponding to the birth date |
+| phone\_number      | string    | phone number                              |
+
+link `users.company_id=companies.object_id`

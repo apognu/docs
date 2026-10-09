@@ -1,0 +1,35 @@
+---
+title: "Roles"
+description: "Detail of the roles provided within Marble"
+---
+
+Detail of the roles provided within Marble
+
+By default, Marble provides 4 types of roles that can be assigned to the users
+
+**Viewer**
+
+The viewer can see the scenario by not modify them. He can also see / interact on the case management inboxes where the access is granted
+
+**Builder**
+
+The builder can create a new scenario draft and modify the rules in that draft. The modifications cannot be pushed to production without a Publisher validation
+
+The builder can also create and modify the lists.
+
+**Publisher**
+
+The publisher can create new scenario versions from a draft, set them live, revert to a previous scenario version and create a test run.
+
+**Admin**
+
+The admin can
+
+* Access the settings and create users, API keys, webhooks settings
+* Create / modify tags and inboxes for the case manager
+* Create / modify / publish scenarios
+* Modify the data model
+
+There is a dedicated rights management for the **case manager**. Once the inbox are created by an Admin, another user can be designated as Inbox Admin. The Inbox Admin can add / remove users from its inbox.
+
+Users without Inbox viewer or admin rights cannot see the content of an inbox.

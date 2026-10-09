@@ -1,0 +1,45 @@
+---
+title: "Getting started"
+---
+
+import Screenshot from '../../../components/Screenshot.astro';
+
+## List scenarios
+
+1. Go to the Scenarios tab
+2. From the scenario list you can
+
+   1. Create a new scenario
+   2. Open an existing scenario
+
+<Screenshot src="scenarios/getting-started-1.png" bordered />
+
+## Create a new scenario
+
+1. Click on `+ New Scenario` button (see screenshot above)
+2. Complete the form to generate a new scenario :
+   1. **Name**: this serves as a concise label used to identify the scenario throughout the application. The name can be updated after creation.
+   2. **Description**:  this provides users with a reminder of the scenario's purpose. The description can be updated after creation
+   3. **Trigger object**: the central object that initiates the decision-making process. This must be an entity of your data model. The trigger object **cannot be updated** after creation.
+
+### Example
+
+We want to create the second scenario displayed in the above screenshot.<br />The data model used in our organization is:
+
+<Screenshot src="scenarios/getting-started-3.png" />
+
+The scenario will be utilized to make decisions for each card payout. The card payout is represented by transactions in our data model, which constitutes our trigger object.
+
+<Screenshot src="scenarios/getting-started-2.png" bordered />
+
+## Manage existing scenario
+
+1. Open the scenario you want to edit (cf first screenshot)
+2. From the scenario's homepage you can
+   1. Edit the name and description
+   2. Pick the version/draft you want to see
+   3. Run a new batch or access historical ones
+   4. Create a new TestRun or access historical ones
+   5. Create a [workflow](/scenarios/workflows/) or edit your existing one
+
+<Screenshot src="scenarios/getting-started-4.png" />

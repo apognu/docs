@@ -1,0 +1,314 @@
+---
+title: "Screening deployment"
+---
+
+This guide covers deploying Marble with sanctions and watchlist screening. Screening requires **Elasticsearch** and two additional services: **yente** (indexer) and **motiva** (search engine). Continuous screening adds optional monitoring of internal watchlists.
+
+## Prerequisites
+
+Ensure Marble is otherwise running (API server, worker, and database all functional). You'll need:
+
+* **Elasticsearch** (v9+) — standalone or managed service, reachable by yente and motiva
+* Container orchestration (Kubernetes, Cloud Run, or equivalent) for yente and motiva
+* Network connectivity between services (Elasticsearch, yente, motiva, Marble backend)
+
+## Step 1: Deploy Elasticsearch
+
+Elasticsearch v9+ powers the search backend. Use a managed service (Elastic Cloud...) or self-host.
+
+### OpenSearch Compatibility
+
+We do not provide official support for OpenSearch, but several users have reported no problems running Marble screening with OpenSearch.
+
+### Minimum Configuration
+
+* **Cluster health:** Green status with at least 1 node operational
+* **Shards:** At least 2 shards recommended for production deployments (`YENTE_INDEX_SHARDS=2`)
+* **Storage:** Allocate sufficient disk space for sanctions data (typically 50GB+)
+* **Memory:** 16GB+ heap size recommended
+
+### Managed Services
+
+**AWS OpenSearch:**
+
+* Create domain via AWS Console
+* Enable encryption at rest and in transit
+* Configure IAM authentication or IP whitelist
+* Note the domain endpoint and credentials
+
+**Elastic Cloud:**
+
+* Create deployment
+* Configure security settings
+* Retrieve credentials for yente and motiva
+
+Verify connectivity:
+
+```bash
+curl http://elasticsearch:9200/_cluster/health
+# Response: {"cluster_name":"elasticsearch","status":"green",...}
+```
+
+**With authentication:** Generate credentials and note the username/password for yente and motiva configuration.
+
+## Step 2: Deploy yente (Indexer)
+
+yente indexes sanctions data into Elasticsearch. Run it as a scheduled job that triggers periodically (every 4-6 hours recommended).
+
+**Docker image:** `ghcr.io/opensanctions/yente:5.4.0` (check [releases](https://github.com/opensanctions/yente) for latest)
+
+**Manifest file:**
+
+Create a manifest JSON file (see [Manifest Configuration](#manifest-configuration) below). The manifest should be:
+
+* Accessible from both yente and motiva (via HTTP URL or mounted file)
+* **Not authenticated** — it contains no sensitive data
+* Protected by network isolation if needed
+
+**Required environment variables:**
+
+| Variable               | Example                                              | Notes                                                     |
+| ---------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| `YENTE_INDEX_URL`      | `http://elasticsearch:9200`                          | Elasticsearch cluster URL                                 |
+| `YENTE_MANIFEST`       | `http://marble-backend:8080/screening-manifest.json` | Path or unauthenticated URL accessible from yente service |
+| `YENTE_INDEX_USERNAME` | `elastic`                                            | Required if Elasticsearch has auth                        |
+| `YENTE_INDEX_PASSWORD` | —                                                    | Required if Elasticsearch has auth                        |
+| `YENTE_INDEX_SHARDS`   | `2`                                                  | Number of Elasticsearch shards (minimum 2 for production) |
+
+**Optional environment variables:**
+
+| Variable                    | Default | Notes                                                                                           |
+| --------------------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| `YENTE_INDEX_AUTO_REPLICAS` | `0-all` | Replica configuration                                                                           |
+| `SCREENING_INDEXER_TOKEN`   | —       | Required for continuous screening; token used to authenticate against Marble's catalog endpoint |
+
+## Step 3: Deploy motiva (Search Engine)
+
+Motiva handles screening queries from the Marble API. Run it as a long-lived service.
+
+**Docker image:** `ghcr.io/apognu/motiva:v0.8.1` (check [releases](https://github.com/apognu/motiva) for latest)
+
+**Required environment variables:**
+
+| Variable    | Example                     | Notes                     |
+| ----------- | --------------------------- | ------------------------- |
+| `INDEX_URL` | `http://elasticsearch:9200` | Elasticsearch cluster URL |
+
+**With Elasticsearch authentication:**
+
+| Variable              | Example                                            | Notes                                                               |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+| `INDEX_AUTH_METHOD`   | `basic`, `bearer`, `api_key`, or `encoded_api_key` | Authentication method                                               |
+| `INDEX_CLIENT_ID`     | `elastic`                                          | Username or API key ID (required for `basic`, `api_key`)            |
+| `INDEX_CLIENT_SECRET` | —                                                  | Password, token, or secret (required for all methods except `none`) |
+
+**Optional environment variables:**
+
+| Variable                  | Default | Notes                                                                       |
+| ------------------------- | ------- | --------------------------------------------------------------------------- |
+| `INDEX_NAME`              | `yente` | Index name prefix (must match yente's `YENTE_INDEX_NAME`)                   |
+| `MANIFEST_URL`            | —       | Path or unauthenticated URL accessible from motiva service                  |
+| `SCREENING_INDEXER_TOKEN` | —       | Token for Marble catalog authentication (required for continuous screening) |
+
+## Step 4: Configure Marble Backend
+
+**Environment variables to set on both API server and worker:**
+
+```bash
+# URL of motiva instance (internal network address)
+OPENSANCTIONS_API_HOST=http://motiva:8000
+
+# Optional: token for continuous screening
+SCREENING_INDEXER_TOKEN=<random-secure-token>
+
+# Optional: blob storage for continuous screening datasets
+CONTINUOUS_SCREENING_BUCKET_URL=s3://bucket-name/path
+# or: gs://bucket-name/path
+# or: file:///local/path (development only)
+```
+
+## Manifest Configuration
+
+The manifest is a JSON file that defines which data catalogs yente and motiva will use. Both services read from the same manifest.
+
+**Manifest location:** Serve from S3, GCS, or mount as a file.
+
+**Basic manifest (public OpenSanctions only):**
+
+```json
+{
+  "catalogs": [
+    {
+      "url": "https://data.opensanctions.org/datasets/latest/index.json",
+      "scope": "default",
+      "resource_name": "entities.ftm.json"
+    }
+  ]
+}
+```
+
+**With continuous screening (custom watchlists):**
+
+```json
+{
+  "catalogs": [
+    {
+      "url": "https://data.opensanctions.org/datasets/latest/index.json",
+      "scope": "default",
+      "resource_name": "entities.ftm.json"
+    },
+    {
+      "url": "https://your-marble-instance.com/screening-indexer/catalogs",
+      "auth_token": "$SCREENING_INDEXER_TOKEN"
+    }
+  ]
+}
+```
+
+**Notes:**
+
+* `$SCREENING_INDEXER_TOKEN` is a variable reference that yente/motiva resolve at runtime from the environment variable
+* Do not manually substitute the token value
+* For public URLs, ensure they're reachable from yente and motiva containers
+
+### Custom datasets
+
+If you wish to add a custom dataset containing your own entities to your screening setup (on top of Open Sanctions or Lexis Nexis entities), you would need to wrap both the default datasets and your own in a custom collection.
+
+```json
+{
+  "catalogs": [
+    {
+      "url": "https://data.opensanctions.org/datasets/latest/index.json",
+      "scope": "default",
+      "resource_name": "entities.ftm.json"
+    },
+    {
+      "url": "https://your-marble-instance.com/screening-indexer/catalogs",
+      "auth_token": "$SCREENING_INDEXER_TOKEN"
+    }
+  ],
+  "datasets": [
+		{
+      "name": "custom",
+      "title": "Custom Dataset",
+			"version": "20260623120000-abc",
+			"entities_url": "https://link.to/your/entities.json"
+    },
+    {
+      "name": "full_collection",
+      "title": "Full Collection",
+			"datasets": ["default", "custom"]
+    }
+  ]
+}
+```
+
+After this, you should point Marble at your custom collection's name when configuring it, such that:
+
+```
+SCREENING_OPENSANCTIONS_SCOPE=full_collection
+```
+
+Your custom datasets should now appear in the screening configuration screens, and screening should now be performed on both the Open Sanctions `default` catalog and your custom dataset.
+
+## Optional: Continuous Screening
+
+Continuous screening monitors your internal watchlists for updates to external sanctions lists. This requires the setup above plus additional configuration.
+
+### Prerequisites
+
+* Screening (steps 1-4 above) must be deployed and working
+* Generate a secure token for `SCREENING_INDEXER_TOKEN` (used for API authentication):
+  ```bash
+  openssl rand -hex 32
+  ```
+* Set `SCREENING_INDEXER_TOKEN` on **Marble API, Marble worker, yente, and motiva**
+
+### Configuration
+
+**1. Update Marble backend environment variables:**
+
+Set these on both **API server and worker**:
+
+```bash
+CONTINUOUS_SCREENING_BUCKET_URL=s3://your-bucket/continuous-screening
+# or gs://your-bucket/continuous-screening
+# or file:///local/path (for development)
+
+SCREENING_INDEXER_TOKEN=<same-token-used-above>
+```
+
+**2. Configure yente and motiva:**
+
+Pass the shared token and manifest URL (as described in Steps 2-3 above):
+
+```bash
+# yente
+YENTE_MANIFEST=https://your-marble-instance.com/screening-manifest.json
+SCREENING_INDEXER_TOKEN=<same-token>
+
+# motiva
+MANIFEST_URL=https://your-marble-instance.com/screening-manifest.json
+SCREENING_INDEXER_TOKEN=<same-token>
+```
+
+### How It Works
+
+1. **Marble tracks monitored entities** — When you configure continuous screening in the Marble UI, new and updated entities are tracked in the database
+2. **Marble creates datasets** — Periodic background jobs generate full/delta datasets in blob storage (S3, GCS...)
+3. **yente indexes custom data** — During reindexing, yente pulls datasets from Marble and indexes them into ES
+4. **Marble monitors updates** — Periodic jobs scan OpenSanctions for changes and match them against your entities
+5. **Alerts are generated** — Matches above a confidence threshold create continuous screening alerts
+
+### Environment Variables
+
+**Marble backend** (API server and worker):
+
+| Variable                          | Required | Default | Notes                                                  |
+| --------------------------------- | -------- | ------- | ------------------------------------------------------ |
+| `CONTINUOUS_SCREENING_BUCKET_URL` | Yes      | —       | Blob storage for datasets: `s3://`, `gs://`, `file://` |
+| `SCREENING_INDEXER_TOKEN`         | Yes      | —       | Shared secret for API authentication                   |
+| `CREATE_FULL_DATASET_INTERVAL`    | No       | `24h`   | How often to generate full datasets                    |
+| `SCAN_DATASET_UPDATES_INTERVAL`   | No       | `24h`   | How often to scan for OpenSanctions updates            |
+
+***
+
+## Verification
+
+### Check motiva status
+
+```bash
+curl http://motiva:8000/catalog
+# Should return the data catalog
+```
+
+###
+
+### Test motiva matching
+
+Once motiva is running and yente has indexed data:
+
+```bash
+curl -X POST http://motiva:8000/match/default \
+  -H "Content-Type: application/json" \
+  -d '{
+    "queries": {
+      "entity1": {
+        "schema": "Person",
+        "properties": {
+          "name": ["Vladimir Putin"]
+        }
+      }
+    }
+  }'
+```
+
+Expected: 200 response with matches and confidence scores.
+
+### Check Elasticsearch indices
+
+```bash
+curl http://elasticsearch:9200/_cat/indices
+# Should list yente_* indices
+```

@@ -1,0 +1,47 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { ScalarComponent } from '@scalar/astro';
+
+import { specs } from '../../lib/openapi';
+
+import '../../styles/scalar.css';
+
+export function getStaticPaths() {
+	return Object.entries(specs).map(([version, props]) => ({ params: { version }, props }));
+}
+
+const { title, spec } = Astro.props;
+---
+
+<StarlightPage frontmatter={{ title, tableOfContents: false, pagefind: false, prev: false, next: false }}>
+	<div class="scalar-reference not-content">
+		<ScalarComponent
+			renderMode="client"
+			configuration={{
+				content: spec,
+				layout: 'modern',
+				hideDarkModeToggle: true,
+				withDefaultFonts: false,
+				showDeveloperTools: 'never',
+				showToolbar: 'never',
+				agent: { disabled: true },
+				mcp: { disabled: true },
+			}}
+		/>
+	</div>
+</StarlightPage>
+
+<script>
+	// Keep Scalar's color mode in sync with Starlight's theme selector. Scalar also sets these classes itself
+	// (from the system preference) once it mounts, so watch the body too and re-apply when they diverge.
+	const sync = () => {
+		const dark = document.documentElement.dataset.theme === 'dark';
+		if (document.body.classList.contains('dark-mode') === dark && document.body.classList.contains('light-mode') === !dark) return;
+		document.body.classList.toggle('dark-mode', dark);
+		document.body.classList.toggle('light-mode', !dark);
+	};
+	sync();
+	const observer = new MutationObserver(sync);
+	observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+	observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+</script>

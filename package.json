@@ -1,0 +1,24 @@
+{
+  "name": "marble-docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "sh scripts/fetch-openapi.sh --if-missing && astro dev",
+    "start": "sh scripts/fetch-openapi.sh --if-missing && astro dev",
+    "build": "sh scripts/fetch-openapi.sh --if-missing && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "openapi:fetch": "sh scripts/fetch-openapi.sh"
+  },
+  "dependencies": {
+    "@astro-community/astro-embed-youtube": "^0.5.10",
+    "@astrojs/starlight": "^0.42.5",
+    "@iconify-json/ph": "^1.2.2",
+    "@scalar/astro": "^0.4.28",
+    "astro": "^7.2.10",
+    "astro-icon": "^1.2.0",
+    "sharp": "^0.35.3",
+    "starlight-image-zoom": "^0.16.1",
+    "yaml": "^2.9.1"
+  }
+}
