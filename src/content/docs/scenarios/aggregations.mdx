@@ -2,8 +2,6 @@
 title: "Aggregations"
 ---
 
-import Screenshot from '../../../components/Screenshot.astro';
-
 ## Definition
 
 Aggregations allow you to make calculations on historical data to result into a single numerical value.
@@ -32,18 +30,18 @@ A variable is composed of several elements:
 3. The **object field** is the field on which your are going to make the calculation, it will be `transactions.amount`in our example.
 4. The **filters** will let you narrow your database into the data frame you want to focus on. We will use it to focus on a) debit transactions, b) made by the current user, c) by card and d) in the last 6 months.
 
-:::note
+<Aside type="note">
 Filters can be divided in 3 parts:
 
 * **The 1st operand** is necessarily a field from the table you selected in the object field.
 * **The 2nd operand** is a field from the triggering object, or another function
 * **The operator** will compare the two operands to result in a logical value
-:::
+</Aside>
 
 Here's what the variable looks like with our example:
 
-<Screenshot src="scenarios/aggregations-1.png" caption="Variables apply filters on your database based on the triggering object" bordered />
+<Screenshot src="scenarios/aggregations/aggregations-1.png" caption="Variables apply filters on your database based on the triggering object" bordered />
 
 **Note** that you can (and probably will) combine aggregations and nesting. Here's a typical example of a condition checking if the transaction's amount is more than 10 times greater than the user's average transactions amounts in the last 2 months:
 
-<Screenshot src="scenarios/aggregations-2.png" caption="You can easily combine aggregations and nesting" width="500px" bordered />
+<Screenshot src="scenarios/aggregations/aggregations-2.png" caption="You can easily combine aggregations and nesting" width="500px" bordered />

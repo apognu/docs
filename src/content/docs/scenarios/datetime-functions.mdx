@@ -2,8 +2,6 @@
 title: "Datetime functions"
 ---
 
-import Screenshot from '../../../components/Screenshot.astro';
-
 ## Definition
 
 Datetime functions allow you to perform calculations on datetime fields. Marble provides two specific functions:
@@ -23,11 +21,11 @@ The **Date** function has 3 main components:
 * **Operator:** it can + or -, to add or substract a duration to your operand
 * **Duration operand:** it is composed of two fields. The first one is a number input field, and the second is a unit picker. You can add the number you want and select unit between seconds, minutes, hours, and days.
 
-<Screenshot src="scenarios/datetime-functions-1.png" caption="The Date function" width="400px" />
+<Screenshot src="scenarios/datetime-functions/datetime-functions-1.png" caption="The Date function" width="400px" />
 
-:::note
+<Aside type="note">
 You can use the **Date** function directly in a formula or inside an [aggregation](/scenarios/aggregations/), and for both rules or trigger conditions.
-:::
+</Aside>
 
 ### Now
 
@@ -51,4 +49,4 @@ In the rule builder, we should:
 
 Here, the result of the Date function will be the datetime of exactly 30 days before the scenario execution. If the user creation datetime is greater that this variable, it then means that is was created in the last 30 days.
 
-<Screenshot src="scenarios/datetime-functions-2.png" caption="This simple condition checks it the user was recently created" />
+<Screenshot src="scenarios/datetime-functions/datetime-functions-2.png" caption="This simple condition checks it the user was recently created" />

@@ -2,8 +2,6 @@
 title: "Basics"
 ---
 
-import Screenshot from '../../../components/Screenshot.astro';
-
 ## Operands and operators
 
 A formula is composed of 2 main elements:
@@ -11,7 +9,7 @@ A formula is composed of 2 main elements:
 * **Operands** are data point used in operations. They can be a value, a variable, or the result of another operation.
 * **Operators** represent an action that combines two provided operands into a single boolean result.
 
-<Screenshot src="scenarios/basics-1.png" caption="Operators compare operands to result in a boolean" bordered />
+<Screenshot src="scenarios/basics/basics-1.png" caption="Operators compare operands to result in a boolean" bordered />
 
 ## Nesting
 
@@ -22,7 +20,7 @@ Nesting conditions allows you to combine multiple logical operations into a sing
 1. The first operand will be your transaction `amount`
 2. The main operator here is `≥`
 3. Then, click on your 2nd operand, and select **Modeling → Open brackets**
-4. <Screenshot src="scenarios/basics-2.png" width="300px" />
+4. <Screenshot src="scenarios/basics/basics-2.png" width="300px" />
 
    In the newly added brackets:
 
@@ -32,4 +30,4 @@ Nesting conditions allows you to combine multiple logical operations into a sing
 
 There you go! Here's what your rule should look like: it indeed check if the transaction amount is greater than or equal to 50% of the user's declared income.
 
-<Screenshot src="scenarios/basics-3.png" width="500px" />
+<Screenshot src="scenarios/basics/basics-3.png" width="500px" />

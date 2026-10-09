@@ -3,17 +3,15 @@ title: "Create a table"
 description: "How to create a new table (that is, a business entity to use for ingestion and in decisions)"
 ---
 
-import Screenshot from '../../../components/Screenshot.astro';
-
 How to create a new table (that is, a business entity to use for ingestion and in decisions)
 
-:::note[Behind the curtain]
+<Aside type="note" title="Behind the curtain">
 When you create a table (an entity) in Marble, what happens under the hood is that we create a table in a dedicated (Postgresql) database. Similarly, creating fields creates columns, making fields unique creates unique indexes, etc. However, "links" between Marble entities are not represented as foreign keys in the database.
-:::
+</Aside>
 
 You enter the data model page with an empty view. The first step is pretty obvious: let's create a new table in our model.
 
-<Screenshot src="data-model/create-a-table-1.png" bordered />
+<Screenshot src="data-model/create-a-table/create-a-table-1.png" bordered />
 
 The main thing you have to decide at this point is the name of your table.
 
@@ -21,11 +19,11 @@ We allow alphanumeric characters as well as the underscore "\_" character. Bewar
 
 Optionally, set a description to help the people who will be building and maintaining the rules, at least where the usage of the table is not self-explanatory.
 
-<Screenshot src="data-model/create-a-table-2.png" bordered />
+<Screenshot src="data-model/create-a-table/create-a-table-2.png" bordered />
 
 There you are: you should now have an "empty" table as below. Of course, you'll see that it is not really empty, because two fields are created by default and are required for every entity.
 
-<Screenshot src="data-model/create-a-table-3.png" bordered />
+<Screenshot src="data-model/create-a-table/create-a-table-3.png" bordered />
 
 * `object_id` represents the primary unique identifier of the object in your systems. It must be a string and is used for deduplication of ingested data (that is to say, there will only ever be one live row for any given `object_id` value in your ingested data for this table)
 * `updated_at` represents the metadata of last update timestamp of the object in your systems. If no such notion exists for your object, don't worry: you can always use the current timestamp or a constant value every time you call the API.

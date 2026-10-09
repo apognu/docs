@@ -5,9 +5,9 @@ description: Migration guide from the deprecated Marble public API to the offici
 
 This page offers advice on how to migrate from the legacy Marble public API (deprecated as of July 24th, 2025 and to be removed in Feb 2026) to the official v1 Marble API.
 
-:::tip[New customers]
+<Aside type="tip" title="New customers">
 If you are a new Marble user or starting a new Marble implementation from scratch, you can safely ignore this page.
-:::
+</Aside>
 
 ## Response format changes
 
@@ -72,9 +72,9 @@ The existing legacy public API endpoints now log a warning log every time an unk
 
 The v1 API accepts authentication with a Bearer token (see [intro](/api/introduction/#authentication)).
 
-:::tip[Compatibility]
+<Aside type="tip" title="Compatibility">
 For compatibility, public API v1 will still accept authentication through the `x-api-key` header. This may be removed in a future major API version.
-:::
+</Aside>
 
 ## Error responses
 

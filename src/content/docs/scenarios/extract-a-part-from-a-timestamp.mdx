@@ -3,8 +3,6 @@ title: "Extract a part from a timestamp"
 description: "Extract a year, month, day or hour from a timestamp, returning an integer number."
 ---
 
-import Screenshot from '../../../components/Screenshot.astro';
-
 Extract a year, month, day or hour from a timestamp, returning an integer number.
 
 ## Definition
@@ -30,12 +28,12 @@ Let's say we aim to verify whether the transaction was made between between 2AM 
 
 1. **Select the Function**: Choose the "Extract a part from a timestamp" function to compute the date from 7 days ago.
 
-<Screenshot src="scenarios/extract-a-part-from-a-timestamp-1.png" caption={"Select the \"Extract a part from a timestamp\" function in operand picker"} bordered />
+<Screenshot src="scenarios/extract-a-part-from-a-timestamp/extract-a-part-from-a-timestamp-1.png" caption={"Select the \"Extract a part from a timestamp\" function in operand picker"} bordered />
 
 2. **Extract the hour of the transaction**: pick the option "Hour" and select the creation date of the transaction to get the hour at which the transaction was made.
 
-<Screenshot src="scenarios/extract-a-part-from-a-timestamp-2.png" caption={"The \"Hour\" option will extract the hour of your parameter"} width="500px" bordered />
+<Screenshot src="scenarios/extract-a-part-from-a-timestamp/extract-a-part-from-a-timestamp-2.png" caption={"The \"Hour\" option will extract the hour of your parameter"} width="500px" bordered />
 
 3. **Build your condition**: select your operator and your threshold for the lower bound of the time range, and then do the same for the upper bound.
 
-<Screenshot src="scenarios/extract-a-part-from-a-timestamp-3.png" caption="This rule will check if the transaction happened between 2AM and 9AM" bordered />
+<Screenshot src="scenarios/extract-a-part-from-a-timestamp/extract-a-part-from-a-timestamp-3.png" caption="This rule will check if the transaction happened between 2AM and 9AM" bordered />

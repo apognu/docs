@@ -1,0 +1,2 @@
+# Keystatic admin is a client-side app served by /keystatic/ (see src/keystatic/integration.ts).
+/keystatic/* /keystatic/ 200
